@@ -1,0 +1,14 @@
+preprocessor.py
+imdb/
+	# everything in the original file downloaded
+data/
+	og/
+		id1_label_score.txt
+		id2_label_score.txt
+		...
+	sd100/
+	sd200/
+	...
+	test/
+	wdxxx/
+	...
