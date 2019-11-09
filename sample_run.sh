@@ -7,7 +7,7 @@ python bert/run_classifier.py \
   --task_name=imdb \
   --do_train=true \
   --do_eval=true \
-  --data_dir=$GLUE_DIR/MRPC \
+  --data_dir=$IMDB_DIR \
   --subset_dir=$SUBSET_DIR \
   --vocab_file=$BERT_BASE_DIR/vocab.txt \
   --bert_config_file=$BERT_BASE_DIR/bert_config.json \
