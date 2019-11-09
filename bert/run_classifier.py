@@ -25,7 +25,12 @@ import modeling
 import optimization
 import tokenization
 import tensorflow as tf
-from cs229-project.dataprocessor import *
+
+import sys,inspect
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir) 
+from dataprocessor import *
 
 flags = tf.flags
 
