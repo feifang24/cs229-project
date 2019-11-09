@@ -5,7 +5,7 @@ export OUTPUT_DIR=gs://cs229-checkpoints/sample-run
 
 python3 bert/run_classifier.py \
   --task_name=imdb \
-  --do_train=true \
+  --do_train=false \
   --do_eval=true \
   --data_dir=$IMDB_DIR \
   --subset_dir=$SUBSET_DIR \
