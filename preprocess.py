@@ -1,12 +1,11 @@
 import os
 import random
 
-rawDataDir = "imdb"
-outputDataDir = "data"
-ogDataDir = "og"
-smallDataDir = "sd"
-trainFolder = "train"
-testFolder = "test"
+'''
+Make sure raw data is aligned like mentioned in SPEC.txt, and just run
+$ python preprocessor.py
+to generate data directory.
+'''
 
 def load_data(path):
   '''
@@ -39,15 +38,38 @@ def write_files(outputDir, data):
 
 
 def main():
+  # Output dir names
+  outputDataDir = "data"
+  testDataDir = "test"
+  ogDataDir = "og"
+  smallDataDir = "sd"
+  # Input dir names
+  rawDataDir = "imdb"
+  trainFolder = "train"
+  testFolder = "test"
+
+  if os.path.exists(outputDataDir):
+    print('\"%s\" already exists as a directory. Delete it before regenerating data.' % outputDataDir)
+    return
+
   trainingDataPath = os.path.join(rawDataDir, trainFolder)
   allTrainingData = load_data(trainingDataPath)
   random.shuffle(allTrainingData)
+  # write sampled filesets
   for k in [100,200,400,800,1600,3200]:
     subset = sample(allTrainingData, k)
-    outputDir = os.path.join(outputDataDir, smallDataDir+str(k), trainFolder)
-    write_files(outputDir, subset)
-  outputDir = os.path.join(outputDataDir, ogDataDir, trainFolder)
-  write_files(outputDir, allTrainingData)
+    sdOutputDir = os.path.join(outputDataDir, smallDataDir+str(k))
+    write_files(sdOutputDir, subset)
+
+  # write og fileset
+  ogOutputDir = os.path.join(outputDataDir, ogDataDir)
+  write_files(ogOutputDir, allTrainingData)
+
+  # write test fileset
+  testDataPath = os.path.join(rawDataDir, testFolder)
+  allTestData = load_data(testDataPath)
+  testOutputDir = os.path.join(outputDataDir, testDataDir)
+  write_files(testOutputDir, allTestData)
 
 
 main()
