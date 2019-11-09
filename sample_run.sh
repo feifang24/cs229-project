@@ -1,4 +1,4 @@
-export BERT_BASE_DIR=gs://bert_models/2018_10_18/uncased_L-12_H-768_A-12
+export BERT_BASE_DIR=gs://cs229-checkpoints/uncased_L-12_H-768_A-12
 export IMDB_DIR=gs://cs229-data/imdb-data
 export SUBSET_DIR=sd100
 export OUTPUT_DIR=gs://cs229-checkpoints/sample-run
