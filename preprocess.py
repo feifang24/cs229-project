@@ -65,7 +65,7 @@ def main():
     sdOutputDir = os.path.join(outputDataDir, smallDataDir+str(k))
     if os.path.exists(sdOutputDir):
       continue
-    subset = sample(posTrainingData, k/2) + sample(negTrainingData, k/2)
+    subset = sample(posTrainingData, int(k/2)) + sample(negTrainingData, int(k/2))
     write_files(sdOutputDir, subset)
 
   # write og fileset
