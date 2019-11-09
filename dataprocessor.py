@@ -18,8 +18,9 @@ class ImdbProcessor():
     return self._create_examples(os.path.join(self.dataDirPath, dataset))
 
   def get_dev_examples(self):
-    # TODO: What do we do here? Is dev set required?
-    raise NotImplementedError()
+    # TODO: in debug mode right now. later will do train-dev split.
+    assert dataset in self.allDataSets
+    return self._create_examples(os.path.join(self.dataDirPath, dataset))
 
   def get_test_examples(self):
     return self._create_examples(os.path.join(self.dataDirPath, "test"))

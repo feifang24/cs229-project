@@ -36,6 +36,9 @@ flags.DEFINE_string(
     "data_dir", None,
     "The input data dir. Should contain the .tsv files (or other data files) "
     "for the task.")
+flags.DEFINE_string(
+    "subset_dir", None,
+    "The input subdataset dir.")
 
 flags.DEFINE_string(
     "bert_config_file", None,
@@ -832,6 +835,7 @@ def main(_):
 
 if __name__ == "__main__":
   flags.mark_flag_as_required("data_dir")
+  flags.mark_flag_as_required("subset_dir")
   flags.mark_flag_as_required("task_name")
   flags.mark_flag_as_required("vocab_file")
   flags.mark_flag_as_required("bert_config_file")
