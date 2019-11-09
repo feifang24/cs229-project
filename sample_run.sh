@@ -16,4 +16,5 @@ python3 bert/run_classifier.py \
   --train_batch_size=16 \
   --learning_rate=2e-5 \
   --num_train_epochs=20.0 \
-  --output_dir=$OUTPUT_DIR
+  --output_dir=$OUTPUT_DIR \
+  --save_checkpoints_steps=6
