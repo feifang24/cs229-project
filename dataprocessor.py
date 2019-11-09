@@ -1,5 +1,6 @@
 from common import InputExample
 import os
+import tensorflow as tf
 
 class ImdbProcessor():
 
@@ -17,23 +18,24 @@ class ImdbProcessor():
     assert dataset in self.allDataSets
     return self._create_examples(os.path.join(self.dataDirPath, dataset))
 
-  def get_dev_examples(self):
-    # TODO: What do we do here? Is dev set required?
-    raise NotImplementedError()
+  def get_dev_examples(self, dataset):
+    # TODO: in debug mode right now. later will do train-dev split.
+    assert dataset in self.allDataSets
+    return self._create_examples(os.path.join(self.dataDirPath, dataset))
 
   def get_test_examples(self):
     return self._create_examples(os.path.join(self.dataDirPath, "test"))
 
   def _create_examples(self, dataDirPath):
     examples = []
-    for filename in os.listdir(dataDirPath):
+    for filename in tf.gfile.ListDirectory(dataDirPath):
       if not filename.endswith("txt"):
         continue
       keys = filename.split(".")[0].split("_")
       assert len(keys) == 3
       # keys is [id, label, review_score]. For now we are only interested in the label
       label = keys[1]
-      with open(os.path.join(dataDirPath, filename)) as f:
+      with tf.gfile.Open(os.path.join(dataDirPath, filename)) as f:
         text = f.read().strip().replace("<br />", " ")
       examples.append(InputExample(
           guid="unused_id", text_a=text, text_b=None, label=label))
