@@ -18,7 +18,7 @@ class ImdbProcessor():
     assert dataset in self.allDataSets
     return self._create_examples(os.path.join(self.dataDirPath, dataset))
 
-  def get_dev_examples(self):
+  def get_dev_examples(self, dataset):
     # TODO: in debug mode right now. later will do train-dev split.
     assert dataset in self.allDataSets
     return self._create_examples(os.path.join(self.dataDirPath, dataset))
