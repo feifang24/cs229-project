@@ -4,6 +4,9 @@ import os
 class ImdbProcessor():
 
   def __init__(self, dataDirPath):
+    '''
+    dataDirPath is the path that leads to "data" directory that preprocessor outputted.
+    '''
     self.dataDirPath = dataDirPath
     self.allDataSets = set(["og", "sd100", "sd200", "sd400", "sd800", "sd1600", "sd3200", "test"])
 
