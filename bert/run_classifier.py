@@ -25,6 +25,7 @@ import modeling
 import optimization
 import tokenization
 import tensorflow as tf
+from cs229-project.dataprocessor import *
 
 flags = tf.flags
 
@@ -123,7 +124,7 @@ flags.DEFINE_integer(
     "num_tpu_cores", 8,
     "Only used if `use_tpu` is True. Total number of TPU cores to use.")
 
-
+'''
 class InputExample(object):
   """A single training/test example for simple sequence classification."""
 
@@ -143,6 +144,7 @@ class InputExample(object):
     self.text_a = text_a
     self.text_b = text_b
     self.label = label
+'''
 
 
 class PaddingInputExample(object):
@@ -173,7 +175,7 @@ class InputFeatures(object):
     self.label_id = label_id
     self.is_real_example = is_real_example
 
-
+'''
 class DataProcessor(object):
   """Base class for data converters for sequence classification data sets."""
 
@@ -227,6 +229,7 @@ class ImdbProcessor(DataProcessor):
         examples.append(InputExample(
             guid="unused_id", text_a=text, text_b=None, label=label))
     return examples
+  '''
 
 def convert_single_example(ex_index, example, label_list, max_seq_length,
                            tokenizer):
@@ -638,10 +641,6 @@ def main(_):
   tf.logging.set_verbosity(tf.logging.INFO)
 
   processors = {
-      "cola": ColaProcessor,
-      "mnli": MnliProcessor,
-      "mrpc": MrpcProcessor,
-      "xnli": XnliProcessor,
       "imdb": ImdbProcessor
   }
 
@@ -674,6 +673,8 @@ def main(_):
   tokenizer = tokenization.FullTokenizer(
       vocab_file=FLAGS.vocab_file, do_lower_case=FLAGS.do_lower_case)
 
+  # ============== TPU settings ==================== 
+
   tpu_cluster_resolver = None
   if FLAGS.use_tpu and FLAGS.tpu_name:
     tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(
@@ -690,11 +691,13 @@ def main(_):
           num_shards=FLAGS.num_tpu_cores,
           per_host_input_for_training=is_per_host))
 
+  # =================================================
+
   train_examples = None
   num_train_steps = None
   num_warmup_steps = None
   if FLAGS.do_train:
-    train_examples = processor.get_train_examples(FLAGS.data_dir)
+    train_examples = processor.get_train_examples(FLAGS.data_dir. FLAGS.subset_dir)
     num_train_steps = int(
         len(train_examples) / FLAGS.train_batch_size * FLAGS.num_train_epochs)
     num_warmup_steps = int(num_train_steps * FLAGS.warmup_proportion)
@@ -735,7 +738,7 @@ def main(_):
     estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
 
   if FLAGS.do_eval:
-    eval_examples = processor.get_dev_examples(FLAGS.data_dir)
+    eval_examples = processor.get_dev_examples(FLAGS.data_dir, FLAGS.subset_dir)
     num_actual_eval_examples = len(eval_examples)
     if FLAGS.use_tpu:
       # TPU requires a fixed batch size for all batches, therefore the number
