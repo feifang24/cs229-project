@@ -48,17 +48,22 @@ def main():
   trainFolder = "train"
   testFolder = "test"
 
+  '''
   if os.path.exists(outputDataDir):
     print('\"%s\" already exists as a directory. Delete it before regenerating data.' % outputDataDir)
     return
+  '''
 
   trainingDataPath = os.path.join(rawDataDir, trainFolder)
   allTrainingData = load_data(trainingDataPath)
+  random.seed(42)
   random.shuffle(allTrainingData)
   # write sampled filesets
   for k in [100,200,400,800,1600,3200]:
     subset = sample(allTrainingData, k)
     sdOutputDir = os.path.join(outputDataDir, smallDataDir+str(k))
+    if os.path.exists(outputDataDir):
+      continue
     write_files(sdOutputDir, subset)
 
   # write og fileset
