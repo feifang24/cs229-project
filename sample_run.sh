@@ -3,7 +3,7 @@ export IMDB_DIR=gs://cs229-data/imdb-data
 export SUBSET_DIR=sd100
 export OUTPUT_DIR=gs://cs229-checkpoints/sample-run
 
-python bert/run_classifier.py \
+python3 bert/run_classifier.py \
   --task_name=imdb \
   --do_train=true \
   --do_eval=true \
