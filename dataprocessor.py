@@ -1,6 +1,7 @@
 from common import InputExample
 import os
 import tensorflow as tf
+from sklearn.model_selection import train_test_split
 
 class ImdbProcessor():
 
@@ -10,18 +11,20 @@ class ImdbProcessor():
     '''
     self.dataDirPath = dataDirPath
     self.allDataSets = set(["og", "sd100", "sd200", "sd400", "sd800", "sd1600", "sd3200", "test"])
+        
+    self.trainDevSplit = {ds: 0.8 for ds in self.allDataSets}
+    self.trainDevExamples = None
 
   def get_labels(self):
     return ["neg", "pos"]
 
   def get_train_examples(self, dataset):
-    assert dataset in self.allDataSets
-    return self._create_examples(os.path.join(self.dataDirPath, dataset))
+    trainExamples, _ = self._get_train_dev_examples(dataset)
+    return trainExamples
 
   def get_dev_examples(self, dataset):
-    # TODO: in debug mode right now. later will do train-dev split.
-    assert dataset in self.allDataSets
-    return self._create_examples(os.path.join(self.dataDirPath, dataset))
+    _, devExamples = self._get_train_dev_examples(dataset)
+    return devExamples
 
   def get_test_examples(self):
     return self._create_examples(os.path.join(self.dataDirPath, "test"))
@@ -40,3 +43,11 @@ class ImdbProcessor():
       examples.append(InputExample(
           guid="unused_id", text_a=text, text_b=None, label=label))
     return examples
+
+  def _get_train_dev_examples(self, dataset):
+    assert dataset in self.allDataSets
+    if self.trainDevExamples is None:
+      # load examples if they haven't been loaded before
+      self.trainDevExamples = self._create_examples(os.path.join(self.dataDirPath, dataset))
+    return train_test_split(self.trainDevExamples, 
+                        train_size=self.trainDevSplit[dataset], random_state=42)
