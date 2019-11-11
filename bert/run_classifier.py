@@ -20,17 +20,20 @@ from __future__ import print_function
 
 import collections
 import csv
+import json
 import os
 import modeling
 import optimization
 import tokenization
 import tensorflow as tf
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import sys,inspect
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir) 
 from dataprocessor import *
+from common import *
 
 flags = tf.flags
 
@@ -57,7 +60,11 @@ flags.DEFINE_string("vocab_file", None,
 
 flags.DEFINE_string(
     "output_dir", None,
-    "The output directory where the model checkpoints will be written.")
+    "The parent output directory where the model checkpoints/eval files/pred files will be written.")
+
+flags.DEFINE_string(
+    "model_id", None,
+    "identifier for trained model. Required when doing pred, or when running eval without training.")
 
 ## Other parameters
 
@@ -667,7 +674,30 @@ def main(_):
         "was only trained up to sequence length %d" %
         (FLAGS.max_seq_length, bert_config.max_position_embeddings))
 
-  tf.gfile.MakeDirs(FLAGS.output_dir)
+  if not tf.gfile.IsDirectory(FLAGS.output_dir):
+    tf.gfile.MakeDirs(FLAGS.output_dir)
+
+  if not tf.gfile.IsDirectory(os.path.join(FLAGS.output_dir, FLAGS.subset_dir)):
+    # no model has been trained on this subdataset before
+    tf.gfile.MakeDirs(os.path.join(FLAGS.output_dir, FLAGS.subset_dir))
+
+
+  # verify model id
+  if FLAGS.do_train:
+    FLAGS.model_id = random_model_hash()      # generate model hash
+    new_dir = os.path.join(FLAGS.output_dir, FLAGS.subset_dir, FLAGS.model_id)
+    tf.gfile.MakeDirs(new_dir) # make directory based on hash
+    # write config
+    with tf.gfile.GFile(os.path.join(new_dir, "config.json"), "w") as f:
+      f.write(json.dump(FLAGS.flag_values_dict()).encode("utf-8"))
+  elif FLAGS.model_id is None:
+    # train off; either pred or eval is on
+    raise ValueError(
+        "No model ID provided. Model ID is required for eval/predict when not training.")
+
+  ## change FLAGS.output_dir to new dir
+  FLAGS.output_dir = os.path.join(FLAGS.output_dir, FLAGS.subset_dir, FLAGS.model_id)
+
 
   task_name = FLAGS.task_name.lower()
 

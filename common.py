@@ -1,3 +1,5 @@
+import secrets
+
 class InputExample(object):
   """A single training/test example for simple sequence classification."""
 
@@ -16,3 +18,6 @@ class InputExample(object):
     self.text_a = text_a
     self.text_b = text_b
     self.label = label
+
+def random_model_hash():
+  return secrets.token_hex(nbytes=4)
