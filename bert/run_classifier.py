@@ -689,7 +689,7 @@ def main(_):
     tf.gfile.MakeDirs(new_dir) # make directory based on hash
     # write config
     with tf.gfile.GFile(os.path.join(new_dir, "config.json"), "w") as f:
-      f.write(json.dumps(FLAGS.flag_values_dict()).encode("utf-8"))
+      f.write(json.dump(FLAGS.flag_values_dict()).encode("utf-8"))
   elif FLAGS.model_id is None:
     # train off; either pred or eval is on
     raise ValueError(
