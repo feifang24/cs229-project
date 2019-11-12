@@ -84,13 +84,8 @@ flags.DEFINE_integer(
     "Sequences longer than this will be truncated, and sequences shorter "
     "than this will be padded.")
 
-flags.DEFINE_bool("do_train", False, "Whether to run training.")
-
-flags.DEFINE_bool("do_eval", False, "Whether to run eval on the dev set.")
-
-flags.DEFINE_bool(
-    "do_predict", False,
-    "Whether to run the model in inference mode on the test set.")
+flags.DEFINE_enum('mode', 'train', ['train', 'eval', 'predict'],
+                         'Choose whether to train/eval/predict.')
 
 flags.DEFINE_integer("train_batch_size", 32, "Total batch size for training.")
 
@@ -666,9 +661,6 @@ def main(_):
   tokenization.validate_case_matches_checkpoint(FLAGS.do_lower_case,
                                                 FLAGS.init_checkpoint)
 
-  if not FLAGS.do_train and not FLAGS.do_eval and not FLAGS.do_predict:
-    raise ValueError(
-        "At least one of `do_train`, `do_eval` or `do_predict' must be True.")
 
   bert_config = modeling.BertConfig.from_json_file(FLAGS.bert_config_file)
 
@@ -687,7 +679,7 @@ def main(_):
 
 
   # verify model id
-  if FLAGS.do_train:
+  if FLAGS.mode == "train":
     FLAGS.model_id = random_model_hash()      # generate model hash
     new_dir = os.path.join(FLAGS.output_dir, FLAGS.subset_dir, FLAGS.model_id)
     tf.gfile.MakeDirs(new_dir) # make directory based on hash
@@ -739,7 +731,7 @@ def main(_):
   num_train_steps_per_epoch = None
   num_train_steps_total = None
   num_warmup_steps = None
-  if FLAGS.do_train:
+  if FLAGS.mode == "train":
     train_examples = processor.get_train_examples(FLAGS.subset_dir)
     eval_examples = processor.get_dev_examples(FLAGS.subset_dir)
     num_actual_eval_examples = len(eval_examples)
@@ -777,7 +769,7 @@ def main(_):
       eval_batch_size=FLAGS.eval_batch_size,
       predict_batch_size=FLAGS.predict_batch_size)
 
-  if FLAGS.do_train:
+  if FLAGS.mode == "train":
     train_file = os.path.join(FLAGS.output_dir, "train.tf_record")
     file_based_convert_examples_to_features(
         train_examples, label_list, FLAGS.max_seq_length, tokenizer, train_file)
@@ -808,11 +800,12 @@ def main(_):
     best_result = None
     patience = FLAGS.patience
     for i in range(FLAGS.num_train_epochs):
-      tf.logging.info("===== Running training for EPOCH %d =====", i)
+      curr_epoch = i + 1
+      tf.logging.info("===== Running training for EPOCH %d =====", curr_epoch)
 
-      estimator.train(input_fn=train_input_fn, max_steps=num_train_steps_per_epoch * (i+1))
+      estimator.train(input_fn=train_input_fn, max_steps=num_train_steps_per_epoch * curr_epoch)
 
-      tf.logging.info("===== Running evaluation for EPOCH %d =====", i)
+      tf.logging.info("===== Running evaluation for EPOCH %d =====", curr_epoch)
       tf.logging.info("  Num examples = %d (%d actual, %d padding)",
                     len(eval_examples), num_actual_eval_examples,
                     len(eval_examples) - num_actual_eval_examples)
@@ -827,15 +820,15 @@ def main(_):
         eval_steps = int(len(eval_examples) // FLAGS.eval_batch_size)
       result = estimator.evaluate(input_fn=eval_input_fn, steps=eval_steps)
 
-      output_eval_file = os.path.join(FLAGS.output_dir, "eval_results_epoch_{}.txt".format(i))
+      output_eval_file = os.path.join(FLAGS.output_dir, "eval_results_epoch_{}.txt".format(curr_epoch))
       with tf.gfile.GFile(output_eval_file, "w") as writer:
-        tf.logging.info("***** Eval results for EPOCH %d *****", i)
+        tf.logging.info("***** Eval results for EPOCH %d *****", curr_epoch)
         for key in sorted(result.keys()):
           tf.logging.info("  %s = %s", key, str(result[key]))
           writer.write("%s = %s\n" % (key, str(result[key])))
       if result['eval_loss'] <= best_val_loss:
         best_val_loss = result['eval_loss']
-        best_epoch = i
+        best_epoch = curr_epoch
         best_result = result
         patience = FLAGS.patience
       else:
@@ -844,18 +837,18 @@ def main(_):
           tf.logging.info("Early stopping.")
           break
         else:
-          tf.logging.info("Validation loss did not decrease. Will try for %d more epochs.", patience)
+          tf.logging.info("Will try for %d more epochs.", patience)
           patience -= 1
 
     best_output_eval_file = os.path.join(FLAGS.output_dir, "best_eval_results.txt")
     with tf.gfile.GFile(best_output_eval_file, "w") as writer:
       tf.logging.info("***** Best eval results: EPOCH %d *****", best_epoch)
-      writer.write("Best epoch = {}".format(best_epoch))
+      writer.write("Best checkpoint = ckpt-{}".format(best_epoch * num_train_steps_per_epoch))
       for key in sorted(best_result.keys()):
         tf.logging.info("  %s = %s", key, str(best_result[key]))
         writer.write("%s = %s\n" % (key, str(best_result[key])))
 
-  if FLAGS.do_eval:
+  if FLAGS.mode == "eval":
     eval_examples = processor.get_dev_examples(FLAGS.subset_dir)
     num_actual_eval_examples = len(eval_examples)
     if FLAGS.use_tpu:
@@ -901,7 +894,7 @@ def main(_):
         tf.logging.info("  %s = %s", key, str(result[key]))
         writer.write("%s = %s\n" % (key, str(result[key])))
 
-  if FLAGS.do_predict:
+  if FLAGS.mode == "predict":
     predict_examples = processor.get_test_examples(FLAGS.data_dir)
     num_actual_predict_examples = len(predict_examples)
     if FLAGS.use_tpu:

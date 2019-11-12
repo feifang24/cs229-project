@@ -9,7 +9,6 @@ export OUTPUT_DIR=gs://cs229-checkpoints/$TASK_NAME
 python3 bert/run_classifier.py \
   --task_name=$TASK_NAME \
   --do_train=true \
-  --do_eval=false \
   --data_dir=$DATA_DIR \
   --subset_dir=$SUBSET_DIR \
   --vocab_file=$BERT_BASE_DIR/vocab.txt \
@@ -18,7 +17,6 @@ python3 bert/run_classifier.py \
   --max_seq_length=128 \
   --train_batch_size=16 \
   --learning_rate=2e-5 \
-  --num_train_epochs=10 \
+  --num_train_epochs=2 \
   --output_dir=$OUTPUT_DIR \
-  --model_id=$MODEL_ID \
-  --save_checkpoints_steps=200
+  --model_id=$MODEL_ID 
