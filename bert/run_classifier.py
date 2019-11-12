@@ -99,8 +99,11 @@ flags.DEFINE_integer("predict_batch_size", 8, "Total batch size for predict.")
 
 flags.DEFINE_float("learning_rate", 5e-5, "The initial learning rate for Adam.")
 
-flags.DEFINE_float("num_train_epochs", 3.0,
+flags.DEFINE_integer("num_train_epochs", 3,
                    "Total number of training epochs to perform.")
+
+flags.DEFINE_integer("patience", 0,
+                    "num epochs to try after val loss stops decreasing.")
 
 flags.DEFINE_float(
     "warmup_proportion", 0.1,
@@ -732,20 +735,31 @@ def main(_):
   # =================================================
 
   train_examples = None
-  num_train_steps = None
+  num_train_steps_per_epoch = None
   num_warmup_steps = None
   if FLAGS.do_train:
     train_examples = processor.get_train_examples(FLAGS.subset_dir)
-    num_train_steps = int(
-        len(train_examples) / FLAGS.train_batch_size * FLAGS.num_train_epochs)
-    num_warmup_steps = int(num_train_steps * FLAGS.warmup_proportion)
+    eval_examples = processor.get_dev_examples(FLAGS.subset_dir)
+    num_actual_eval_examples = len(eval_examples)
+    if FLAGS.use_tpu:
+      # TPU requires a fixed batch size for all batches, therefore the number
+      # of examples must be a multiple of the batch size, or else examples
+      # will get dropped. So we pad with fake examples which are ignored
+      # later on. These do NOT count towards the metric (all tf.metrics
+      # support a per-instance weight, and these get a weight of 0.0).
+      while len(eval_examples) % FLAGS.eval_batch_size != 0:
+        eval_examples.append(PaddingInputExample())
+
+    num_train_steps_per_epoch = int(
+        len(train_examples) / FLAGS.train_batch_size) # * FLAGS.num_train_epochs)
+    num_warmup_steps = int(num_train_steps_per_epoch * FLAGS.num_train_epochs * FLAGS.warmup_proportion)
 
   model_fn = model_fn_builder(
       bert_config=bert_config,
       num_labels=len(label_list),
       init_checkpoint=FLAGS.init_checkpoint,
       learning_rate=FLAGS.learning_rate,
-      num_train_steps=num_train_steps,
+      num_train_steps=num_train_steps_per_epoch,
       num_warmup_steps=num_warmup_steps,
       use_tpu=FLAGS.use_tpu,
       use_one_hot_embeddings=FLAGS.use_tpu)
@@ -764,16 +778,79 @@ def main(_):
     train_file = os.path.join(FLAGS.output_dir, "train.tf_record")
     file_based_convert_examples_to_features(
         train_examples, label_list, FLAGS.max_seq_length, tokenizer, train_file)
+    train_input_fn = file_based_input_fn_builder(
+          input_file=train_file,
+          seq_length=FLAGS.max_seq_length,
+          is_training=True,
+          drop_remainder=True)
+
+    eval_file = os.path.join(FLAGS.output_dir, "eval.tf_record")
+    file_based_convert_examples_to_features(
+        eval_examples, label_list, FLAGS.max_seq_length, tokenizer, eval_file)
+    eval_drop_remainder = True if FLAGS.use_tpu else False
+    eval_input_fn = file_based_input_fn_builder(
+          input_file=eval_file,
+          seq_length=FLAGS.max_seq_length,
+          is_training=False,
+          drop_remainder=eval_drop_remainder)
+
     tf.logging.info("***** Running training *****")
     tf.logging.info("  Num examples = %d", len(train_examples))
     tf.logging.info("  Batch size = %d", FLAGS.train_batch_size)
-    tf.logging.info("  Num steps = %d", num_train_steps)
-    train_input_fn = file_based_input_fn_builder(
-        input_file=train_file,
-        seq_length=FLAGS.max_seq_length,
-        is_training=True,
-        drop_remainder=True)
-    estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
+    tf.logging.info("  Num epochs = %d", FLAGS.num_train_epochs)
+    # tf.logging.info("  Num steps = %d", num_train_steps)
+
+    best_val_loss = np.inf
+    best_epoch = None
+    best_result = None
+    patience = FLAGS.patience
+    for i in range(FLAGS.num_train_epochs):
+      tf.logging.info("===== Running training for EPOCH %d =====", i)
+
+      estimator.train(input_fn=train_input_fn, max_steps=num_train_steps_per_epoch)
+
+      tf.logging.info("===== Running evaluation for EPOCH %d =====", i)
+      tf.logging.info("  Num examples = %d (%d actual, %d padding)",
+                    len(eval_examples), num_actual_eval_examples,
+                    len(eval_examples) - num_actual_eval_examples)
+      tf.logging.info("  Batch size = %d", FLAGS.eval_batch_size)
+
+      # This tells the estimator to run through the entire set.
+      eval_steps = None
+      # However, if running eval on the TPU, you will need to specify the
+      # number of steps.
+      if FLAGS.use_tpu:
+        assert len(eval_examples) % FLAGS.eval_batch_size == 0
+        eval_steps = int(len(eval_examples) // FLAGS.eval_batch_size)
+      result = estimator.evaluate(input_fn=eval_input_fn, steps=eval_steps)
+
+      output_eval_file = os.path.join(FLAGS.output_dir, "eval_results_epoch_{}.txt".format(i))
+      with tf.gfile.GFile(output_eval_file, "w") as writer:
+        tf.logging.info("***** Eval results for EPOCH %d *****", i)
+        for key in sorted(result.keys()):
+          tf.logging.info("  %s = %s", key, str(result[key]))
+          writer.write("%s = %s\n" % (key, str(result[key])))
+      if result['eval_loss'] <= best_val_loss:
+        best_val_loss = result['eval_loss']
+        best_epoch = i
+        best_result = result
+        patience = FLAGS.patience
+      else:
+        tf.logging.info("Validation loss did not decrease.")
+        if patience == 0:
+          tf.logging.info("Early stopping.")
+          break
+        else:
+          patience -= 1
+          tf.logging.info("Validation loss did not decrease. Will try for %d more epochs.", patience)
+
+    best_output_eval_file = os.path.join(FLAGS.output_dir, "best_eval_results.txt")
+    with tf.gfile.GFile(best_output_eval_file, "w") as writer:
+      tf.logging.info("***** Best eval results: EPOCH %d *****", best_epoch)
+      writer.write("Best epoch = {}".format(best_epoch))
+      for key in sorted(best_result.keys()):
+        tf.logging.info("  %s = %s", key, str(best_result[key]))
+        writer.write("%s = %s\n" % (key, str(best_result[key])))
 
   if FLAGS.do_eval:
     eval_examples = processor.get_dev_examples(FLAGS.subset_dir)

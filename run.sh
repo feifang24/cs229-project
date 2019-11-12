@@ -1,4 +1,4 @@
-export SUBSET_DIR=sd3200
+export SUBSET_DIR=sd100
 export MODEL_ID=992534b7   # this is ignored if do_train=True
 
 export BERT_BASE_DIR=gs://cs229-checkpoints/uncased_L-12_H-768_A-12
@@ -9,7 +9,7 @@ export OUTPUT_DIR=gs://cs229-checkpoints/$TASK_NAME
 python3 bert/run_classifier.py \
   --task_name=$TASK_NAME \
   --do_train=true \
-  --do_eval=true \
+  --do_eval=false \
   --data_dir=$DATA_DIR \
   --subset_dir=$SUBSET_DIR \
   --vocab_file=$BERT_BASE_DIR/vocab.txt \
@@ -18,7 +18,7 @@ python3 bert/run_classifier.py \
   --max_seq_length=128 \
   --train_batch_size=16 \
   --learning_rate=2e-5 \
-  --num_train_epochs=10.0 \
+  --num_train_epochs=10 \
   --output_dir=$OUTPUT_DIR \
   --model_id=$MODEL_ID \
   --save_checkpoints_steps=200
