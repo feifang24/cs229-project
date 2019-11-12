@@ -808,7 +808,7 @@ def main(_):
     for i in range(FLAGS.num_train_epochs):
       tf.logging.info("===== Running training for EPOCH %d =====", i)
 
-      estimator.train(input_fn=train_input_fn, max_steps=num_train_steps_per_epoch)
+      estimator.train(input_fn=train_input_fn, max_steps=num_train_steps_per_epoch * (i+1))
 
       tf.logging.info("===== Running evaluation for EPOCH %d =====", i)
       tf.logging.info("  Num examples = %d (%d actual, %d padding)",
