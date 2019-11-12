@@ -8,7 +8,7 @@ export OUTPUT_DIR=gs://cs229-checkpoints/$TASK_NAME
 
 python3 bert/run_classifier.py \
   --task_name=$TASK_NAME \
-  --do_train=true \
+  --mode=train \
   --data_dir=$DATA_DIR \
   --subset_dir=$SUBSET_DIR \
   --vocab_file=$BERT_BASE_DIR/vocab.txt \
