@@ -6,7 +6,7 @@ export TASK_NAME=imdb
 export DATA_DIR=gs://cs229-data/imdb-data
 export OUTPUT_DIR=gs://cs229-checkpoints/$TASK_NAME
 
-for SUBSET_DIR in sd100 sd200 sd400 sd800 sd1600 sd3200 og
+for SUBSET_DIR in sd100  sd200 sd400 sd800 sd1600 sd3200 og
 do
   python3 bert/run_classifier.py \
     --task_name=$TASK_NAME \
@@ -19,7 +19,8 @@ do
     --max_seq_length=128 \
     --train_batch_size=32 \
     --learning_rate=2e-5 \
-    --num_train_epochs=2 \
+    --num_train_epochs=10 \
+    --patience=2 \
     --output_dir=$OUTPUT_DIR \
     --model_id=$MODEL_ID 
 done
