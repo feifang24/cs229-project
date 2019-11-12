@@ -843,7 +843,7 @@ def main(_):
     best_output_eval_file = os.path.join(FLAGS.output_dir, "best_eval_results.txt")
     with tf.gfile.GFile(best_output_eval_file, "w") as writer:
       tf.logging.info("***** Best eval results: EPOCH %d *****", best_epoch)
-      writer.write("Best checkpoint = ckpt-{}".format(best_epoch * num_train_steps_per_epoch))
+      writer.write("Best checkpoint = ckpt-{} \n".format(best_epoch * num_train_steps_per_epoch))
       for key in sorted(best_result.keys()):
         tf.logging.info("  %s = %s", key, str(best_result[key]))
         writer.write("%s = %s\n" % (key, str(best_result[key])))
