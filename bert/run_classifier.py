@@ -737,6 +737,7 @@ def main(_):
 
   train_examples = None
   num_train_steps_per_epoch = None
+  num_train_steps_total = None
   num_warmup_steps = None
   if FLAGS.do_train:
     train_examples = processor.get_train_examples(FLAGS.subset_dir)
@@ -753,14 +754,15 @@ def main(_):
 
     num_train_steps_per_epoch = int(
         len(train_examples) / FLAGS.train_batch_size) # * FLAGS.num_train_epochs)
-    num_warmup_steps = int(num_train_steps_per_epoch * FLAGS.num_train_epochs * FLAGS.warmup_proportion)
+    num_train_steps_total = num_train_steps_per_epoch * FLAGS.num_train_epochs
+    num_warmup_steps = int(num_train_steps_total * FLAGS.warmup_proportion)
 
   model_fn = model_fn_builder(
       bert_config=bert_config,
       num_labels=len(label_list),
       init_checkpoint=FLAGS.init_checkpoint,
       learning_rate=FLAGS.learning_rate,
-      num_train_steps=num_train_steps_per_epoch,
+      num_train_steps=num_train_steps_total,
       num_warmup_steps=num_warmup_steps,
       use_tpu=FLAGS.use_tpu,
       use_one_hot_embeddings=FLAGS.use_tpu)
@@ -842,8 +844,8 @@ def main(_):
           tf.logging.info("Early stopping.")
           break
         else:
-          patience -= 1
           tf.logging.info("Validation loss did not decrease. Will try for %d more epochs.", patience)
+          patience -= 1
 
     best_output_eval_file = os.path.join(FLAGS.output_dir, "best_eval_results.txt")
     with tf.gfile.GFile(best_output_eval_file, "w") as writer:
