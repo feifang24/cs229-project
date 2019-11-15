@@ -7,7 +7,7 @@ $ python preprocessor.py
 to generate data directory.
 '''
 
-SAMPLE_DS_SIZES = [100,200,400,800,1600,3200]
+SAMPLE_DS_SIZES = [100,200,400,800,1600,3200,6400,12800]
 
 def load_data(path):
   '''
@@ -51,7 +51,6 @@ def main():
   trainFolder = "train"
   testFolder = "test"
 
-
   trainingDataPath = os.path.join(rawDataDir, trainFolder)
   allTrainingData = load_data(trainingDataPath)
   posTrainingData = allTrainingData['pos']
@@ -78,7 +77,9 @@ def main():
   testOutputDir = os.path.join(outputDataDir, testDataDir)
   if not os.path.exists(testOutputDir):
     allTestData = load_data(testDataPath)
-    write_files(testOutputDir, allTestData)
+    posTestData = allTestData['pos']
+    negTestData = allTestData['neg']
+    write_files(testOutputDir, posTestData + negTestData)
 
 
 main()
