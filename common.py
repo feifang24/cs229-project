@@ -1,4 +1,5 @@
 import secrets
+import os
 
 class InputExample(object):
   """A single training/test example for simple sequence classification."""
@@ -19,5 +20,15 @@ class InputExample(object):
     self.text_b = text_b
     self.label = label
 
+
 def random_model_hash():
   return secrets.token_hex(nbytes=4)
+
+
+def write_files(outputDir, data):
+  if not os.path.exists(outputDir):
+      os.makedirs(outputDir)
+  for i,example in enumerate(data):
+    outputFilename = "_".join([str(i), example[0], example[1]]) + ".txt"
+    with open(os.path.join(outputDir, outputFilename), "w+") as f:
+        f.write(example[2])

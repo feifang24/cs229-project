@@ -1,5 +1,6 @@
 import os
 import random
+import common
 
 '''
 Make sure raw data is aligned like mentioned in SPEC.txt, and just run
@@ -31,15 +32,6 @@ def sample(randomData, k):
   return list(randomData)[:k]
 
 
-def write_files(outputDir, data):
-  if not os.path.exists(outputDir):
-      os.makedirs(outputDir)
-  for i,example in enumerate(data):
-    outputFilename = "_".join([str(i), example[0], example[1]]) + ".txt"
-    with open(os.path.join(outputDir, outputFilename), "w+") as f:
-        f.write(example[2])
-
-
 def main():
   # Output dir names
   outputDataDir = "imdb-data"
@@ -65,12 +57,12 @@ def main():
     if os.path.exists(sdOutputDir):
       continue
     subset = sample(posTrainingData, int(k/2)) + sample(negTrainingData, int(k/2))
-    write_files(sdOutputDir, subset)
+    common.write_files(sdOutputDir, subset)
 
   # write og fileset
   ogOutputDir = os.path.join(outputDataDir, ogDataDir)
   if not os.path.exists(ogOutputDir):
-    write_files(ogOutputDir, posTrainingData + negTrainingData)
+    common.write_files(ogOutputDir, posTrainingData + negTrainingData)
 
   # write test fileset
   testDataPath = os.path.join(rawDataDir, testFolder)
@@ -79,7 +71,7 @@ def main():
     allTestData = load_data(testDataPath)
     posTestData = allTestData['pos']
     negTestData = allTestData['neg']
-    write_files(testOutputDir, posTestData + negTestData)
+    common.write_files(testOutputDir, posTestData + negTestData)
 
 
 main()
