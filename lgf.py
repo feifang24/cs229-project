@@ -2,7 +2,7 @@ class NaiveLabelGeneratingFunction:
   def __init__(self):
     self.scorerWeights = {
       NaiveAdjectiveSentimentScorer(): 1.0,
-      NaiveVerbLabelGeneratingFunction(): 0.0
+      NaiveVerbSentimentScorer(): 0.0
     }
 
 
@@ -51,7 +51,7 @@ class NaiveAdjectiveSentimentScorer:
     return score
 
 
-class NaiveVerbLabelGeneratingFunction:
+class NaiveVerbSentimentScorer:
   def __init__(self):
     self.goodVerbScore = 1.0
     self.badVerbScore = -3.0
