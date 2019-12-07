@@ -1,13 +1,11 @@
 export SUBSET_DIR=sd100
 export MODEL_ID=12070612
+# if we want to evaluate multiple we should give a list of tuples and iterate through the list
 
 export BERT_BASE_DIR=gs://cs229-checkpoints/uncased_L-12_H-768_A-12
 export TASK_NAME=imdb
 export DATA_DIR=/home/src/imdb-data  #gs://cs229-data/imdb-data
 export OUTPUT_DIR=gs://cs229-checkpoints/$TASK_NAME
-
-export CHECKPOINT_PATH=992534b7   
-
 
 #for SUBSET_DIR in sd100  sd200 sd400 sd800 sd1600 sd3200 sd6400 sd12800 og
 #do
