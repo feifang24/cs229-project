@@ -3,7 +3,7 @@ export MODEL_ID=12070612
 
 export BERT_BASE_DIR=gs://cs229-checkpoints/uncased_L-12_H-768_A-12
 export TASK_NAME=imdb
-export DATA_DIR=gs://cs229-data/imdb-data
+export DATA_DIR=/home/src/imdb-data  #gs://cs229-data/imdb-data
 export OUTPUT_DIR=gs://cs229-checkpoints/$TASK_NAME
 
 export CHECKPOINT_PATH=992534b7   
