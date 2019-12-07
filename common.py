@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 class InputExample(object):
   """A single training/test example for simple sequence classification."""
@@ -20,8 +21,8 @@ class InputExample(object):
     self.label = label
 
 
-def random_model_hash():
-  raise UnimplementedError()
+def model_hash():
+  return datetime.now().strftime('%m%d%H%M')
 
 
 def write_files(outputDir, data):

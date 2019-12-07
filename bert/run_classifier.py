@@ -87,6 +87,9 @@ flags.DEFINE_integer(
 flags.DEFINE_enum('mode', 'train', ['train', 'eval', 'predict'],
                          'Choose whether to train/eval/predict.')
 
+flags.DEFINE_enum('early_stopping_criterion', 'acc', ['acc', 'loss'],
+                  "Whether to use accuracy or loss as early stopping criterion.")
+
 flags.DEFINE_integer("train_batch_size", 32, "Total batch size for training.")
 
 flags.DEFINE_integer("eval_batch_size", 8, "Total batch size for eval.")
@@ -680,7 +683,7 @@ def main(_):
 
   # verify model id
   if FLAGS.mode == "train":
-    FLAGS.model_id = random_model_hash()      # generate model hash
+    FLAGS.model_id = model_hash()      # generate model hash
     new_dir = os.path.join(FLAGS.output_dir, FLAGS.subset_dir, FLAGS.model_id)
     tf.gfile.MakeDirs(new_dir) # make directory based on hash
     # write config
@@ -796,6 +799,7 @@ def main(_):
     # tf.logging.info("  Num steps = %d", num_train_steps)
 
     best_val_loss = np.inf
+    best_val_acc = 0.
     best_epoch = None
     best_result = None
     patience = FLAGS.patience
@@ -826,19 +830,34 @@ def main(_):
         for key in sorted(result.keys()):
           tf.logging.info("  %s = %s", key, str(result[key]))
           writer.write("%s = %s\n" % (key, str(result[key])))
-      if result['eval_loss'] <= best_val_loss:
-        best_val_loss = result['eval_loss']
-        best_epoch = curr_epoch
-        best_result = result
-        patience = FLAGS.patience
-      else:
-        tf.logging.info("Validation loss did not decrease.")
-        if patience == 0:
-          tf.logging.info("Early stopping.")
-          break
+      if FLAGS.early_stopping_criterion == "acc":
+        if result['eval_accuracy'] >= best_val_acc:
+          best_val_acc = result['eval_accuracy']
+          best_epoch = curr_epoch
+          best_result = result
+          patience = FLAGS.patience
         else:
-          tf.logging.info("Will try for %d more epochs.", patience)
-          patience -= 1
+          tf.logging.info("Validation accuracy did not increase.")
+          if patience == 0:
+            tf.logging.info("Early stopping.")
+            break
+          else:
+            tf.logging.info("Will try for %d more epochs.", patience)
+            patience -= 1
+      else: # use loss as early stopping criterion
+        if result['eval_loss'] <= best_val_loss:
+          best_val_loss = result['eval_loss']
+          best_epoch = curr_epoch
+          best_result = result
+          patience = FLAGS.patience
+        else:
+          tf.logging.info("Validation loss did not decrease.")
+          if patience == 0:
+            tf.logging.info("Early stopping.")
+            break
+          else:
+            tf.logging.info("Will try for %d more epochs.", patience)
+            patience -= 1
 
     best_output_eval_file = os.path.join(FLAGS.output_dir, "best_eval_results.txt")
     with tf.gfile.GFile(best_output_eval_file, "w") as writer:
