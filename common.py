@@ -1,4 +1,3 @@
-import secrets
 import os
 
 class InputExample(object):
@@ -22,7 +21,7 @@ class InputExample(object):
 
 
 def random_model_hash():
-  return secrets.token_hex(nbytes=4)
+  raise UnimplementedError()
 
 
 def write_files(outputDir, data):

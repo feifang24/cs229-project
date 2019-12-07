@@ -26,6 +26,9 @@ class ImdbProcessor():
     _, devExamples = self._get_train_dev_examples(dataset)
     return devExamples
 
+  def get_train_and_dev_examples(self, dataset):
+    return self._get_train_dev_examples(dataset)
+
   def get_test_examples(self):
     return self._create_examples(os.path.join(self.dataDirPath, "test"))
 
