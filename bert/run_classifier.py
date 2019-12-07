@@ -141,6 +141,12 @@ flags.DEFINE_integer(
     "num_tpu_cores", 8,
     "Only used if `use_tpu` is True. Total number of TPU cores to use.")
 
+
+CONFIG_HYPERPARAMS = ['max_seq_length', 'train_batch_size',
+                       'learning_rate', 'num_train_epochs',
+                       'patience', 'early_stopping_criterion']
+
+
 '''
 class InputExample(object):
   """A single training/test example for simple sequence classification."""
@@ -686,9 +692,14 @@ def main(_):
     FLAGS.model_id = model_hash()      # generate model hash
     new_dir = os.path.join(FLAGS.output_dir, FLAGS.subset_dir, FLAGS.model_id)
     tf.gfile.MakeDirs(new_dir) # make directory based on hash
+
     # write config
-    with tf.gfile.GFile(os.path.join(new_dir, "config.json"), "w") as f:
-      f.write(json.dumps(FLAGS.flag_values_dict()).encode("utf-8"))
+    flag_dict = FLAGS.flag_values_dict()
+    with tf.gfile.GFile(os.path.join(new_dir, "config.txt"), "w") as writer:
+      tf.logging.info("***** Writing training hyperparams to directory *****")
+      for key in flag_dict.keys():
+        if key in CONFIG_HYPERPARAMS:
+          writer.write("%s = %s\n" % (key, str(flag_dict[key])))
   elif FLAGS.model_id is None:
     # train off; either pred or eval is on
     raise ValueError(
