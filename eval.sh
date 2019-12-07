@@ -13,7 +13,7 @@ export CHECKPOINT_PATH=992534b7
 #do
 python3 bert/run_classifier.py \
     --task_name=$TASK_NAME \
-    --mode=train \
+    --mode=eval \
     --data_dir=$DATA_DIR \
     --subset_dir=$SUBSET_DIR \
     --vocab_file=$BERT_BASE_DIR/vocab.txt \
