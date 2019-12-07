@@ -84,8 +84,8 @@ flags.DEFINE_integer(
     "Sequences longer than this will be truncated, and sequences shorter "
     "than this will be padded.")
 
-flags.DEFINE_enum('mode', 'train', ['train', 'predict'],
-                         'Choose whether to train/predict.')
+flags.DEFINE_enum('mode', 'train', ['train', 'eval', 'predict'],
+                         'Choose whether to train, or eval/predict on test set.')
 
 flags.DEFINE_enum('early_stopping_criterion', 'acc', ['acc', 'loss'],
                   "Whether to use accuracy or loss as early stopping criterion.")
@@ -881,6 +881,7 @@ def main(_):
         writer.write("%s = %s\n" % (key, str(best_result[key])))
 
     # training complete. start autoeval on test set using best checkpoint.
+  if FLAGS.mode == "eval" or "train":
     model_fn = model_fn_builder(
       bert_config=bert_config,
       num_labels=len(label_list),
@@ -899,7 +900,7 @@ def main(_):
       eval_batch_size=FLAGS.eval_batch_size,
       predict_batch_size=FLAGS.predict_batch_size)
 
-    eval_examples = processor.get_test_examples(FLAGS.subset_dir)
+    eval_examples = processor.get_test_examples()
     num_actual_eval_examples = len(eval_examples)
     if FLAGS.use_tpu:
       # TPU requires a fixed batch size for all batches, therefore the number
