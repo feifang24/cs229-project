@@ -85,7 +85,7 @@ flags.DEFINE_integer(
     "than this will be padded.")
 
 flags.DEFINE_enum('mode', 'train', ['train', 'eval', 'predict'],
-                         'Choose whether to train/eval/predict.')
+                         'Choose whether to train, or eval/predict on test set.')
 
 flags.DEFINE_enum('early_stopping_criterion', 'acc', ['acc', 'loss'],
                   "Whether to use accuracy or loss as early stopping criterion.")
@@ -871,15 +871,23 @@ def main(_):
             patience -= 1
 
     best_output_eval_file = os.path.join(FLAGS.output_dir, "best_eval_results.txt")
+    best_global_step = best_result['global_step']
+    best_checkpoint_path = os.path.join(FLAGS.output_dir, 'model.ckpt-{}'.format(best_global_step))
     with tf.gfile.GFile(best_output_eval_file, "w") as writer:
       tf.logging.info("***** Best eval results: EPOCH %d *****", best_epoch)
-      writer.write("Best checkpoint = ckpt-{} \n".format(best_epoch * num_train_steps_per_epoch))
+      writer.write("Best checkpoint path: {}\n".format(best_checkpoint_path))
       for key in sorted(best_result.keys()):
         tf.logging.info("  %s = %s", key, str(best_result[key]))
         writer.write("%s = %s\n" % (key, str(best_result[key])))
 
-  if FLAGS.mode == "eval":
-    eval_examples = processor.get_dev_examples(FLAGS.subset_dir)
+    # training complete. start autoeval on test set using best checkpoint.
+  if FLAGS.mode == "eval" or "train":
+    # get checkpoint
+    best_output_eval_file = os.path.join(FLAGS.output_dir, "best_eval_results.txt")
+    with tf.gfile.GFile(best_output_eval_file, "r") as reader:
+      best_checkpoint_path = reader.readline().replace("Best checkpoint path: ", "").replace("\n", "")
+    
+    eval_examples = processor.get_test_examples()
     num_actual_eval_examples = len(eval_examples)
     if FLAGS.use_tpu:
       # TPU requires a fixed batch size for all batches, therefore the number
@@ -915,11 +923,12 @@ def main(_):
         is_training=False,
         drop_remainder=eval_drop_remainder)
 
-    result = estimator.evaluate(input_fn=eval_input_fn, steps=eval_steps)
+    result = estimator.evaluate(input_fn=eval_input_fn, steps=eval_steps, checkpoint_path=best_checkpoint_path)
 
-    output_eval_file = os.path.join(FLAGS.output_dir, "eval_results.txt")
+    output_eval_file = os.path.join(FLAGS.output_dir, "test_eval_results.txt")
     with tf.gfile.GFile(output_eval_file, "w") as writer:
-      tf.logging.info("***** Eval results *****")
+      tf.logging.info("***** Eval results on TEST set *****")
+      writer.write("Checkpoint path: {}".format(best_checkpoint_path))
       for key in sorted(result.keys()):
         tf.logging.info("  %s = %s", key, str(result[key]))
         writer.write("%s = %s\n" % (key, str(result[key])))
