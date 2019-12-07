@@ -875,17 +875,22 @@ def main(_):
     best_checkpoint_path = os.path.join(FLAGS.output_dir, 'model.ckpt-{}'.format(best_global_step))
     with tf.gfile.GFile(best_output_eval_file, "w") as writer:
       tf.logging.info("***** Best eval results: EPOCH %d *****", best_epoch)
-      writer.write("Best checkpoint path: {}".format(best_checkpoint_path))
+      writer.write("Best checkpoint path: {}\n".format(best_checkpoint_path))
       for key in sorted(best_result.keys()):
         tf.logging.info("  %s = %s", key, str(best_result[key]))
         writer.write("%s = %s\n" % (key, str(best_result[key])))
 
     # training complete. start autoeval on test set using best checkpoint.
   if FLAGS.mode == "eval" or "train":
+    # get checkpoint
+    best_output_eval_file = os.path.join(FLAGS.output_dir, "best_eval_results.txt")
+    with tf.gfile.GFile(best_output_eval_file, "r") as reader:
+      best_checkpoint = reader.readline().replace("Best checkpoint path: ", "")
+
     model_fn = model_fn_builder(
       bert_config=bert_config,
       num_labels=len(label_list),
-      init_checkpoint=best_checkpoint_path,
+      init_checkpoint=best_checkpoint,
       learning_rate=FLAGS.learning_rate,
       num_train_steps=num_train_steps_total,
       num_warmup_steps=num_warmup_steps,
