@@ -885,26 +885,8 @@ def main(_):
     # get checkpoint
     best_output_eval_file = os.path.join(FLAGS.output_dir, "best_eval_results.txt")
     with tf.gfile.GFile(best_output_eval_file, "r") as reader:
-      best_checkpoint = reader.readline().replace("Best checkpoint path: ", "")
-
-    model_fn = model_fn_builder(
-      bert_config=bert_config,
-      num_labels=len(label_list),
-      init_checkpoint=best_checkpoint,
-      learning_rate=FLAGS.learning_rate,
-      num_train_steps=num_train_steps_total,
-      num_warmup_steps=num_warmup_steps,
-      use_tpu=FLAGS.use_tpu,
-      use_one_hot_embeddings=FLAGS.use_tpu)
-
-    estimator = tf.contrib.tpu.TPUEstimator(
-      use_tpu=FLAGS.use_tpu,
-      model_fn=model_fn,
-      config=run_config,
-      train_batch_size=FLAGS.train_batch_size,
-      eval_batch_size=FLAGS.eval_batch_size,
-      predict_batch_size=FLAGS.predict_batch_size)
-
+      best_checkpoint_path = reader.readline().replace("Best checkpoint path: ", "").replace("\n", "")
+    
     eval_examples = processor.get_test_examples()
     num_actual_eval_examples = len(eval_examples)
     if FLAGS.use_tpu:
@@ -941,7 +923,7 @@ def main(_):
         is_training=False,
         drop_remainder=eval_drop_remainder)
 
-    result = estimator.evaluate(input_fn=eval_input_fn, steps=eval_steps)
+    result = estimator.evaluate(input_fn=eval_input_fn, steps=eval_steps, checkpoint_path=best_checkpoint_path)
 
     output_eval_file = os.path.join(FLAGS.output_dir, "test_eval_results.txt")
     with tf.gfile.GFile(output_eval_file, "w") as writer:
