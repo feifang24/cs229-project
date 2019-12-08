@@ -2,10 +2,9 @@ import collections
 
 import numpy as np
 
-import util
 from sklearn.model_selection import train_test_split
 import re
-
+import os
 
 def get_words(message):
     """Get the normalized list of words from a message string.
@@ -165,19 +164,7 @@ def predict_from_naive_bayes_model(model, matrix):
     # *** END CODE HERE ***
 
 
-def get_top_naive_bayes_words(model, dictionary):
-    """Compute the top five words that are most indicative of the imdb (i.e positive) class.
-
-    Ues the metric given in part-c as a measure of how indicative a word is.
-    Return the words in sorted form, with the most indicative word first.
-
-    Args:
-        model: The Naive Bayes model returned from fit_naive_bayes_model
-        dictionary: A mapping of word to integer ids
-
-    Returns: A list of the top five most indicative words in sorted order with the most indicative first
-    """
-    # *** START CODE HERE ***
+def sort_indicative_keywords(model, dictionary):
     probs_pos = model['probs_pos']
     probs_neg = model['probs_neg']
 
@@ -187,47 +174,35 @@ def get_top_naive_bayes_words(model, dictionary):
     indication = log_probs_pos - log_probs_neg
 
     #argsort indication, get the last five indices (they are the most indicative)
-    most_pos_indices = np.argsort(indication)[::-1][:50]
-    most_neg_indices = np.argsort(indication)[:50]
+    most_neg_indices = np.argsort(indication)
+    most_pos_indices = most_neg_indices[::-1]
+
+    return most_pos_indices, most_neg_indices
+
+
+def return_keywords_indices(data):
+    # data is a list of 2-elt lists [text, label]
+    all_messages = [d[0] for d in data] 
+    all_labels = np.asarray([d[1] for d in data])
+
+    train_messages, test_messages, train_labels, test_labels = train_test_split(
+        all_messages, all_labels, test_size=0.2, random_state=42)
+
+    dictionary = create_dictionary(train_messages)
+
     words = list(dictionary.keys())
-    return [words[ind] for ind in most_pos_indices], [words[ind] for ind in most_neg_indices]
-    # *** END CODE HERE ***
 
+    print('Size of dictionary: ', len(dictionary))
 
-def compute_best_svm_radius(train_matrix, train_labels, val_matrix, val_labels, radius_to_consider):
-    """Compute the optimal SVM radius using the provided training and evaluation datasets.
+    train_matrix = transform_text(train_messages, dictionary)
 
-    You should only consider radius values within the radius_to_consider list.
-    You should use accuracy as a metric for comparing the different radius values.
+    test_matrix = transform_text(test_messages, dictionary)
 
-    Args:
-        train_matrix: The word counts for the training data
-        train_labels: The spma or not imdb labels for the training data
-        val_matrix: The word counts for the validation data
-        val_labels: The imdb or not imdb labels for the validation data
-        radius_to_consider: The radius values to consider
+    naive_bayes_model = fit_naive_bayes_model(train_matrix, train_labels)
 
-    Returns:
-        The best radius which maximizes SVM accuracy.
-    """
-    # *** START CODE HERE ***
-    best_radius = None
-    best_accuracy = -1.0
+    most_pos_indices, most_neg_indices = sort_indicative_keywords(naive_bayes_model, dictionary)
 
-    for r in radius_to_consider:
-        val_preds = svm.train_and_predict_svm(train_matrix, train_labels, val_matrix, r)
-        accuracy = sum((val_labels == val_preds).astype(float)) / len(val_labels)
-        if accuracy > best_accuracy:
-            best_radius = r
-            best_accuracy = accuracy
-
-    return best_radius
-
-    # use svm helper to compute outputs for each radius
-    # store accuracy 
-    # get radius that corresponds to highest accuracy
-
-    # *** END CODE HERE ***
+    return words, most_pos_indices, most_neg_indices
 
 
 def main():
