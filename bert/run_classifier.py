@@ -842,7 +842,7 @@ def main(_):
           tf.logging.info("  %s = %s", key, str(result[key]))
           writer.write("%s = %s\n" % (key, str(result[key])))
       if FLAGS.early_stopping_criterion == "acc":
-        if result['eval_accuracy'] >= best_val_acc:
+        if result['eval_accuracy'] > best_val_acc:
           best_val_acc = result['eval_accuracy']
           best_epoch = curr_epoch
           best_result = result
@@ -856,7 +856,7 @@ def main(_):
             tf.logging.info("Will try for %d more epochs.", patience)
             patience -= 1
       else: # use loss as early stopping criterion
-        if result['eval_loss'] <= best_val_loss:
+        if result['eval_loss'] < best_val_loss:
           best_val_loss = result['eval_loss']
           best_epoch = curr_epoch
           best_result = result
