@@ -747,7 +747,7 @@ def main(_):
   num_warmup_steps = None
   if FLAGS.mode == "train":
     train_examples = processor.get_train_examples(FLAGS.subset_dir)
-    eval_examples = processor.get_dev_examples(FLAGS.subset_dir)
+    eval_examples = processor.get_dev_examples()
     num_actual_eval_examples = len(eval_examples)
     if FLAGS.use_tpu:
       # TPU requires a fixed batch size for all batches, therefore the number

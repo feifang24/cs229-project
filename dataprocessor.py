@@ -12,24 +12,20 @@ class ImdbProcessor():
     dataDirPath is the path that leads to "data" directory that preprocessor outputted.
     '''
     self.dataDirPath = dataDirPath
-    self.allDataSets = set(["og", "wd1600", "sd100", "sd200", "sd400", "sd800", "sd1600", "sd3200", "sd6400", "sd12800", "test"])
-        
-    self.trainDevSplit = {ds: 0.8 for ds in self.allDataSets}
-    self.trainDevExamples = None
+    self.allDataSets = set(["og", "wd1600", "sd100", "sd200", "sd400", "sd800", 
+                            "sd1600", "sd3200", "sd6400", "sd12800", "dev", "test"])
 
   def get_labels(self):
     return ["neg", "pos"]
 
   def get_train_examples(self, dataset):
-    trainExamples, _ = self._get_train_dev_examples(dataset)
-    return trainExamples
+    if dataset.startswith("wd"):
+      # load snorkel dataset from csv file
+      return self._create_examples_from_csv(os.path.join(self.dataDirPath, "{}.csv".format(dataset)))
+    return self._create_examples(os.path.join(self.dataDirPath, dataset))
 
-  def get_dev_examples(self, dataset):
-    _, devExamples = self._get_train_dev_examples(dataset)
-    return devExamples
-
-  def get_train_and_dev_examples(self, dataset):
-    return self._get_train_dev_examples(dataset)
+  def get_dev_examples(self):
+    return self._create_examples(os.path.join(self.dataDirPath, "dev"))
 
   def get_test_examples(self):
     return self._create_examples(os.path.join(self.dataDirPath, "test"))
@@ -62,13 +58,3 @@ class ImdbProcessor():
           guid="unused_id", text_a=text, text_b=None, label=str_label))
     return examples
 
-  def _get_train_dev_examples(self, dataset):
-    assert dataset in self.allDataSets
-    if self.trainDevExamples is None:
-      # load examples if they haven't been loaded before
-      if dataset.startswith('wd'):
-        self.trainDevExamples = self._create_examples_from_csv(os.path.join(self.dataDirPath, "{}.csv".format(dataset)))
-      else:
-        self.trainDevExamples = self._create_examples(os.path.join(self.dataDirPath, dataset))
-    return train_test_split(self.trainDevExamples, 
-                        train_size=self.trainDevSplit[dataset], random_state=42)
