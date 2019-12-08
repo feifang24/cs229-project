@@ -58,7 +58,7 @@ class ImdbProcessor():
         text = text.strip().replace("<br />", " ")
         str_label = 'pos' if label == 1 else 'neg'
         examples.append(InputExample(
-          guid="unused_id", text_a=text, text_b=None, label=label))
+          guid="unused_id", text_a=text, text_b=None, label=str_label))
     return examples
 
   def _get_train_dev_examples(self, dataset):
