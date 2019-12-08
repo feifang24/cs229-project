@@ -928,7 +928,7 @@ def main(_):
     output_eval_file = os.path.join(FLAGS.output_dir, "test_eval_results.txt")
     with tf.gfile.GFile(output_eval_file, "w") as writer:
       tf.logging.info("***** Eval results on TEST set *****")
-      writer.write("Checkpoint path: {}".format(best_checkpoint_path))
+      writer.write("Checkpoint path: {}\n".format(best_checkpoint_path))
       for key in sorted(result.keys()):
         tf.logging.info("  %s = %s", key, str(result[key]))
         writer.write("%s = %s\n" % (key, str(result[key])))
