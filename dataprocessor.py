@@ -48,7 +48,7 @@ class ImdbProcessor():
           guid="unused_id", text_a=text, text_b=None, label=label))
     return examples
 
-  def _create_examples_from_csv(input_file):
+  def _create_examples_from_csv(self, input_file):
     """Reads a comma separated value file."""
     examples = []
     with tf.gfile.Open(input_file, "r") as f:
@@ -66,7 +66,7 @@ class ImdbProcessor():
     if self.trainDevExamples is None:
       # load examples if they haven't been loaded before
       if dataset.startswith('wd'):
-        self.trainDevExamples = _create_examples_from_csv(os.path.join(self.dataDirPath, "{}.csv".format(dataset)))
+        self.trainDevExamples = self._create_examples_from_csv(os.path.join(self.dataDirPath, "{}.csv".format(dataset)))
       else:
         self.trainDevExamples = self._create_examples(os.path.join(self.dataDirPath, dataset))
     return train_test_split(self.trainDevExamples, 
