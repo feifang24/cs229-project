@@ -11,7 +11,7 @@ class ImdbProcessor():
     dataDirPath is the path that leads to "data" directory that preprocessor outputted.
     '''
     self.dataDirPath = dataDirPath
-    self.allDataSets = set(["og", "sd100", "sd200", "sd400", "sd800", "sd1600", "sd3200", "sd6400", "sd12800", "test"])
+    self.allDataSets = set(["og", "wd1600", "sd100", "sd200", "sd400", "sd800", "sd1600", "sd3200", "sd6400", "sd12800", "test"])
         
     self.trainDevSplit = {ds: 0.8 for ds in self.allDataSets}
     self.trainDevExamples = None
