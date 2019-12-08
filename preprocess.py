@@ -1,6 +1,7 @@
 import os
 import random
 import common
+from tqdm import tqdm
 
 '''
 Make sure raw data is aligned like mentioned in SPEC.txt, and just run
@@ -18,7 +19,7 @@ def load_data(path):
   allData = {label: [] for label in allLabels}
   for label in allLabels:
     trainingDataDir = os.path.join(path, label)
-    for filename in os.listdir(trainingDataDir):
+    for filename in tqdm(os.listdir(trainingDataDir)):
       if not filename.endswith("txt"):
         continue
       score = filename.split("_")[-1][0]
@@ -36,6 +37,7 @@ def main():
   # Output dir names
   outputDataDir = "imdb-data"
   testDataDir = "test"
+  devDataDir = "dev"
   ogDataDir = "og"
   smallDataDir = "sd"
   # Input dir names
@@ -64,14 +66,23 @@ def main():
   if not os.path.exists(ogOutputDir):
     common.write_files(ogOutputDir, posTrainingData + negTrainingData)
 
-  # write test fileset
+  # write test & dev filesets
   testDataPath = os.path.join(rawDataDir, testFolder)
   testOutputDir = os.path.join(outputDataDir, testDataDir)
-  if not os.path.exists(testOutputDir):
-    allTestData = load_data(testDataPath)
-    posTestData = allTestData['pos']
-    negTestData = allTestData['neg']
-    common.write_files(testOutputDir, posTestData + negTestData)
+  devOutputDir = os.path.join(outputDataDir, devDataDir)
+  #if not os.path.exists(testOutputDir):
+  allTestData = load_data(testDataPath)
+  posTestData = allTestData['pos']
+  negTestData = allTestData['neg']
+
+  cutoff_index = len(posTestData) // 10
+  posDevData = posTestData[:cutoff_index]
+  posTestData = posTestData[cutoff_index:]
+  negDevData = negTestData[:cutoff_index]
+  negTestData = negTestData[cutoff_index:]
+
+  common.write_files(testOutputDir, posTestData + negTestData)
+  common.write_files(devOutputDir, posDevData + negDevData)
 
 
 main()
