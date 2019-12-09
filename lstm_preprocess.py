@@ -1,37 +1,7 @@
 from dataprocessor import ImdbProcessor
 import collections
 import numpy as np
-
-def construct_imdb_dictionaries():
-  '''
-  Return:
-    dictionary: maps word to index
-    reverseDictionary: maps index to word
-  '''
-  dataDir = '../imdb-data'
-  dataProcessor = ImdbProcessor(dataDir)
-  trainExample, devExample = dataProcessor.get_train_and_dev_examples('og')
-  allExample = trainExample + devExample
-  dictionary, reverseDictionary = construct_dictionaries(allExample)
-  return dictionary
-
-
-def examples_to_matrix(examples, dictionary, maxlen=80):
-  '''
-  Converts a list of common.InputExample to a numpy matrix representation of data
-
-  Args:
-    examples: list of common.InputExample (size n)
-    maxlen: the maximum of each vector
-
-  Return:
-    (n x maxlen) array representation of examples
-  '''
-  n = len(examples)
-  arr = np.zeros((n, maxlen))
-  for i,example in enumerate(examples):
-    arr[i] = example_to_vector(example, dictionary, maxlen)
-  return arr
+from tokenizer import BasicTokenizer,FullTokenizer
 
 
 def labels_to_vector(labels):
@@ -44,52 +14,58 @@ def labels_to_vector(labels):
   return np.array([1 * (label == "pos") for label in labels])
 
 
-def example_to_vector(example, dictionary, maxlen=80):
+def example_to_indices(example, tokenizer, dictionary):
   '''
-  Converts a common.InputExample to a numpy array of length maxlen
+  Converts a common.InputExample to a list of indices
 
   Pad short example with 1, and replace unrecognized words with 0
   '''
-  vec = np.ones(maxlen)
-  for i,word in enumerate(text_to_tokens(example.text_a)):
-    if i >= maxlen:
-      break
-    if word not in dictionary:
-      vec[i] = 0
-    else:
-      vec[i] = dictionary[word]
-  return vec
+  tokens = tokenizer.tokenize(example.text_a)
+  return [dictionary.get(token, 0) for token in tokens]
 
 
-def construct_dictionaries(examples, K=10000):
+def examples_to_list_of_indices(examples, tokenizer, dictionary):
+  '''
+  Converts a list of common.InputExample to a list of indices
+
+  Args:
+    examples: list of common.InputExample (size n)
+
+  Return:
+    A list (of length n) of lists (of variable sizes) representing the indices of tokens in this example
+  '''
+  return [example_to_indices(example, tokenizer, dictionary) for example in examples]
+
+
+def construct_dictionary(examples, tokenizer, K, removeTopWords):
   '''
   Construct dictionaries for our corpus. 
 
-  Index 0 is reserved for unspecified words. Index 1 is reserved for padding.
+  Index 0 is reserved for unspecified words.
 
   Args:
     examples: a list of common.InputExample
     K: only construct index for top K most frequent words
 
   Return:
-    dictionary: maps word to index
-    reverseDictionary: maps index to word
+    dictionary: maps token to index
+    reverseDictionary: maps index to token
   '''
   rawCounts = collections.Counter()
   for example in examples:
-    words = text_to_tokens(example.text_a)
-    rawCounts.update(words)
-  mostCommonWords = rawCounts.most_common(K)
+    tokens = tokenizer.tokenize(example.text_a)
+    rawCounts.update(tokens)
+  mostCommonTokens = rawCounts.most_common(K)[removeTopWords:]
   dictionary = dict()
-  reverseDictionary = [None, None]
-  index = 2
-  for word,_ in mostCommonWords:
-    reverseDictionary.append(word)
-    dictionary[word] = index
+  reverseDictionary = [None]
+  index = 1
+  for token,_ in mostCommonTokens:
+    reverseDictionary.append(token)
+    dictionary[token] = index
     index += 1
   return dictionary, reverseDictionary
 
 
-def text_to_tokens(text):
-  return [word.lower() for word in text.split()]
-
+def test():
+  tokenizer = FullTokenizer("vocab.txt")
+  print(tokenizer.tokenize("eat"))

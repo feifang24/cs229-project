@@ -2,7 +2,6 @@ from common import InputExample
 import os
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
-from tqdm import tqdm
 import csv
 
 class ImdbProcessor():
@@ -32,7 +31,7 @@ class ImdbProcessor():
 
   def _create_examples(self, dataDirPath):
     examples = []
-    for filename in tqdm(tf.gfile.ListDirectory(dataDirPath)):
+    for filename in tf.gfile.ListDirectory(dataDirPath):
       if not filename.endswith("txt"):
         continue
       keys = filename.split(".")[0].split("_")

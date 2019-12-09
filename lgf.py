@@ -1,8 +1,9 @@
 class NaiveLabelGeneratingFunction:
   def __init__(self):
     self.scorerWeights = {
-      NaiveAdjectiveSentimentScorer(): 1.0,
-      NaiveVerbSentimentScorer(): 0.0
+      NaiveAdjectiveSentimentScorer(): 0.0,
+      NaiveVerbSentimentScorer(): 0.0,
+      IndicativeSentimentScorer(): 1.0
     }
 
 
@@ -86,4 +87,28 @@ class NaiveVerbSentimentScorer:
         score += self.notGoodVerbScore
       if "we " + notGoodVerb in s:
         score += self.notGoodVerbScore
+    return score
+
+
+class IndicativeSentimentScorer:
+  def __init__(self):
+    self.goodWordScore = 1.0
+    self.badWordScore = -1.0
+    self.goodWords = set([
+      "eddie", "stunning", "ship", "wonderful", "shakespeare", "henry", "hank", "finest", "professional", "watson", "fate", "con", "crowd", "germany", "mclaglen", "guilt", "crafted", "refreshing", "tremendous", "technology", "genuine", "groups", "jackie", "wonderfully", "sullivan", "favorites", "fay", "gothic", "hitman", "gorgeous", "captivating", "poignant", "segment", "teaches", "mafia", "kungfu", "stayed", "confronted", "perfection", "peace", "innocence", "immensely", "ethan", "expensive", "develops", "covered", "arrives", "gena", "superbly"
+    ])
+    self.badWords = set([
+      "beaten", "pointless", "poorly", "laughable", "waste", "mediocre", "thugs", "310", "remotely", "amateurish", "cabin", "drags", "zombies", "worst", "bergman", "cardboard", "1972", "blatantly", "210", "accents", "garbage", "terrible", "awful", "wasting", "lowbudget", "horrible", "morality", "boll", "infected", "incomprehensible", "attack", "unwatchable", "painfully", "anne", "choosing", "flag", "horrendous", "forgettable", "jumps", "unfunny", "pack", "idiotic", "meaningless", "holiday", "zero", "bland", "moon", "crap", "zombie", "dire", "laid"
+    ])
+
+
+  def score(self, s):
+    s = s.lower()
+    score = 0
+    for goodWord in self.goodWords:
+      if goodWord in s:
+        score += self.goodWordScore
+    for badWord in self.badWords:
+      if badWord in s:
+        score += self.badWordScore
     return score

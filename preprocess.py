@@ -1,7 +1,6 @@
 import os
 import random
 import common
-from tqdm import tqdm
 
 '''
 Make sure raw data is aligned like mentioned in SPEC.txt, and just run
@@ -19,7 +18,7 @@ def load_data(path):
   allData = {label: [] for label in allLabels}
   for label in allLabels:
     trainingDataDir = os.path.join(path, label)
-    for filename in tqdm(os.listdir(trainingDataDir)):
+    for filename in os.listdir(trainingDataDir):
       if not filename.endswith("txt"):
         continue
       score = filename.split("_")[-1][0]
@@ -35,13 +34,13 @@ def sample(randomData, k):
 
 def main():
   # Output dir names
-  outputDataDir = "imdb-data"
+  outputDataDir = "../imdb-data"
   testDataDir = "test"
   devDataDir = "dev"
   ogDataDir = "og"
   smallDataDir = "sd"
   # Input dir names
-  rawDataDir = "imdb"
+  rawDataDir = "../imdb"
   trainFolder = "train"
   testFolder = "test"
 
