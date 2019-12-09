@@ -17,6 +17,6 @@ do
     --train_batch_size=32 \
     --learning_rate=2e-5 \
     --num_train_epochs=10 \
-    --patience=0 \
+    --patience=2 \
     --output_dir=$OUTPUT_DIR
 done
