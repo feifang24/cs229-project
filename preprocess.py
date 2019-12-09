@@ -9,7 +9,7 @@ $ python preprocessor.py
 to generate data directory.
 '''
 
-SAMPLE_DS_SIZES = [100,200,400,800,1600,3200,6400,12800]
+SAMPLE_DS_SIZES = [800,1600,3200,6400,12800]
 
 def load_data(path):
   '''
@@ -75,11 +75,11 @@ def main():
   posTestData = allTestData['pos']
   negTestData = allTestData['neg']
 
-  cutoff_index = len(posTestData) // 10
-  posDevData = posTestData[:cutoff_index]
-  posTestData = posTestData[cutoff_index:]
-  negDevData = negTestData[:cutoff_index]
-  negTestData = negTestData[cutoff_index:]
+  NUM_DEV_EXAMPLES = 400
+  posDevData = posTestData[:NUM_DEV_EXAMPLES]
+  posTestData = posTestData[NUM_DEV_EXAMPLES:]
+  negDevData = negTestData[:NUM_DEV_EXAMPLES]
+  negTestData = negTestData[NUM_DEV_EXAMPLES:]
 
   common.write_files(testOutputDir, posTestData + negTestData)
   common.write_files(devOutputDir, posDevData + negDevData)
