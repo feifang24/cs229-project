@@ -26,8 +26,18 @@ class ImdbProcessor():
   def get_dev_examples(self):
     return self._create_examples(os.path.join(self.dataDirPath, "dev"))
 
-  def get_test_examples(self):
-    return self._create_examples(os.path.join(self.dataDirPath, "test"))
+  def get_test_examples(self, splitLabel=False):
+    testExamples = self._create_examples(os.path.join(self.dataDirPath, "test"))
+    if not splitLabel:
+      return testExamples
+    posExamples = []
+    negExamples = []
+    for example in testExamples:
+      if example.label == "pos":
+        posExamples.append(example)
+      else:
+        negExamples.append(example)
+    return posExamples, negExamples
 
   def _create_examples(self, dataDirPath):
     examples = []
