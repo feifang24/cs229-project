@@ -4,6 +4,7 @@ export DATA_DIR=/home/src/imdb-data   #gs://cs229-data/imdb-data
 export OUTPUT_DIR=gs://cs229-checkpoints/$TASK_NAME
 
 for i in {1..3}
+do
     for SUBSET_DIR in wd01 sd800 og sd1600 sd3200 sd6400 sd12800
     do
         python3 bert/run_classifier.py \
