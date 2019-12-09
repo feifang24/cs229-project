@@ -185,20 +185,16 @@ def return_keywords_indices(data):
     all_messages = [d[0] for d in data] 
     all_labels = np.asarray([d[1] for d in data])
 
-    train_messages, test_messages, train_labels, test_labels = train_test_split(
-        all_messages, all_labels, test_size=0.2, random_state=42)
 
-    dictionary = create_dictionary(train_messages)
+    dictionary = create_dictionary(all_messages)
 
     words = list(dictionary.keys())
 
     print('Size of dictionary: ', len(dictionary))
 
-    train_matrix = transform_text(train_messages, dictionary)
+    all_matrix = transform_text(all_messages, dictionary)
 
-    test_matrix = transform_text(test_messages, dictionary)
-
-    naive_bayes_model = fit_naive_bayes_model(train_matrix, train_labels)
+    naive_bayes_model = fit_naive_bayes_model(all_matrix, all_labels)
 
     most_pos_indices, most_neg_indices = sort_indicative_keywords(naive_bayes_model, dictionary)
 
