@@ -747,7 +747,7 @@ def main(_):
   num_warmup_steps = None
   if FLAGS.mode == "train":
     train_examples = processor.get_train_examples(FLAGS.subset_dir)
-    eval_examples = processor.get_dev_examples(FLAGS.subset_dir)
+    eval_examples = processor.get_dev_examples()
     num_actual_eval_examples = len(eval_examples)
     if FLAGS.use_tpu:
       # TPU requires a fixed batch size for all batches, therefore the number
@@ -842,7 +842,7 @@ def main(_):
           tf.logging.info("  %s = %s", key, str(result[key]))
           writer.write("%s = %s\n" % (key, str(result[key])))
       if FLAGS.early_stopping_criterion == "acc":
-        if result['eval_accuracy'] >= best_val_acc:
+        if result['eval_accuracy'] > best_val_acc:
           best_val_acc = result['eval_accuracy']
           best_epoch = curr_epoch
           best_result = result
@@ -856,7 +856,7 @@ def main(_):
             tf.logging.info("Will try for %d more epochs.", patience)
             patience -= 1
       else: # use loss as early stopping criterion
-        if result['eval_loss'] <= best_val_loss:
+        if result['eval_loss'] < best_val_loss:
           best_val_loss = result['eval_loss']
           best_epoch = curr_epoch
           best_result = result
