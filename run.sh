@@ -3,7 +3,7 @@ export TASK_NAME=imdb
 export DATA_DIR=/home/src/imdb-data   #gs://cs229-data/imdb-data
 export OUTPUT_DIR=gs://cs229-checkpoints/$TASK_NAME
 
-for SUBSET_DIR in sd800 wd01 og sd1600 sd3200 sd6400 sd12800
+for SUBSET_DIR in wd01 sd800 og sd1600 sd3200 sd6400 sd12800
 do
   python3 bert/run_classifier.py \
     --task_name=$TASK_NAME \
