@@ -12,14 +12,14 @@ class ImdbProcessor():
     dataDirPath is the path that leads to "data" directory that preprocessor outputted.
     '''
     self.dataDirPath = dataDirPath
-    self.allDataSets = set(["og", "wd", "sd100", "sd200", "sd400", "sd800", 
+    self.allDataSets = set(["og", "wd01-85", "sd100", "sd200", "sd400", "sd800", 
                             "sd1600", "sd3200", "sd6400", "sd12800", "dev", "test"])
 
   def get_labels(self):
     return ["neg", "pos"]
 
   def get_train_examples(self, dataset):
-    if dataset == "wd":
+    if dataset.startswith("wd"):
       # load snorkel dataset from csv file
       return self._create_examples_from_csv(os.path.join(self.dataDirPath, "{}.csv".format(dataset)))
     return self._create_examples(os.path.join(self.dataDirPath, dataset))
