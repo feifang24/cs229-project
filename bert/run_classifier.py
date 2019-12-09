@@ -881,7 +881,7 @@ def main(_):
         writer.write("%s = %s\n" % (key, str(best_result[key])))
 
     # training complete. start autoeval on test set using best checkpoint.
-  if FLAGS.mode == "eval" or "train":
+  if FLAGS.mode == "eval" or FLAGS.mode == "train":
     # get checkpoint
     best_output_eval_file = os.path.join(FLAGS.output_dir, "best_eval_results.txt")
     with tf.gfile.GFile(best_output_eval_file, "r") as reader:
@@ -934,7 +934,7 @@ def main(_):
         writer.write("%s = %s\n" % (key, str(result[key])))
 
   if FLAGS.mode == "predict":
-    predict_examples = processor.get_test_examples(FLAGS.data_dir)
+    predict_examples = processor.get_test_examples()
     num_actual_predict_examples = len(predict_examples)
     if FLAGS.use_tpu:
       # TPU requires a fixed batch size for all batches, therefore the number
