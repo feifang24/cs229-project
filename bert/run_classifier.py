@@ -935,6 +935,11 @@ def main(_):
         writer.write("%s = %s\n" % (key, str(result[key])))
 
   if FLAGS.mode == "predict":
+    # get checkpoint
+    best_output_eval_file = os.path.join(FLAGS.output_dir, "best_eval_results.txt")
+    with tf.gfile.GFile(best_output_eval_file, "r") as reader:
+      best_checkpoint_path = reader.readline().replace("Best checkpoint path: ", "").replace("\n", "")
+
     predict_examples = processor.get_test_examples()
     num_actual_predict_examples = len(predict_examples)
     if FLAGS.use_tpu:
@@ -963,7 +968,7 @@ def main(_):
         is_training=False,
         drop_remainder=predict_drop_remainder)
 
-    result = estimator.predict(input_fn=predict_input_fn)
+    result = estimator.predict(input_fn=predict_input_fn, checkpoint_path=best_checkpoint_path)
 
     output_predict_file = os.path.join(FLAGS.output_dir, "test_results.tsv")
     with tf.gfile.GFile(output_predict_file, "w") as writer:
