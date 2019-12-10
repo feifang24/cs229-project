@@ -87,6 +87,9 @@ flags.DEFINE_integer(
 flags.DEFINE_enum('mode', 'train', ['train', 'eval', 'predict'],
                          'Choose whether to train, or eval/predict on test set.')
 
+flags.DEFINE_enum('pred_ds', 'test', ['train', 'dev', 'test'],
+                          'Which dataset to make predictions on.')
+
 flags.DEFINE_enum('early_stopping_criterion', 'acc', ['acc', 'loss'],
                   "Whether to use accuracy or loss as early stopping criterion.")
 
@@ -940,7 +943,12 @@ def main(_):
     with tf.gfile.GFile(best_output_eval_file, "r") as reader:
       best_checkpoint_path = reader.readline().replace("Best checkpoint path: ", "").replace("\n", "")
 
-    predict_examples = processor.get_test_examples()
+    if FLAGS.pred_ds == 'train':
+      predict_examples = processor.get_train_examples('og')
+    elif FLAGS.pred_ds == 'dev':
+      predict_examples = processor.get_dev_examples()
+    else: # = 'test'
+      predict_examples = processor.get_test_examples()
     num_actual_predict_examples = len(predict_examples)
     if FLAGS.use_tpu:
       # TPU requires a fixed batch size for all batches, therefore the number
@@ -950,12 +958,12 @@ def main(_):
       while len(predict_examples) % FLAGS.predict_batch_size != 0:
         predict_examples.append(PaddingInputExample())
 
-    predict_file = os.path.join(FLAGS.output_dir, "predict.tf_record")
+    predict_file = os.path.join(FLAGS.output_dir, "predict_{}.tf_record".format(FLAGS.pred_ds))
     file_based_convert_examples_to_features(predict_examples, label_list,
                                             FLAGS.max_seq_length, tokenizer,
                                             predict_file)
 
-    tf.logging.info("***** Running prediction*****")
+    tf.logging.info("***** Running prediction on {} set*****".format(FLAGS.pred_ds))
     tf.logging.info("  Num examples = %d (%d actual, %d padding)",
                     len(predict_examples), num_actual_predict_examples,
                     len(predict_examples) - num_actual_predict_examples)
@@ -970,7 +978,7 @@ def main(_):
 
     result = estimator.predict(input_fn=predict_input_fn, checkpoint_path=best_checkpoint_path)
 
-    output_predict_file = os.path.join(FLAGS.output_dir, "test_results.tsv")
+    output_predict_file = os.path.join(FLAGS.output_dir, "preds_on_{}.tsv".format(FLAGS.pred_ds))
     with tf.gfile.GFile(output_predict_file, "w") as writer:
       num_written_lines = 0
       tf.logging.info("***** Predict results *****")
