@@ -11,7 +11,7 @@ class ImdbProcessor():
     dataDirPath is the path that leads to "data" directory that preprocessor outputted.
     '''
     self.dataDirPath = dataDirPath
-    self.allDataSets = set(["og", "wd01", "nwd00", "nwd01", "sd100", "sd200", "sd400", "sd800",
+    self.allDataSets = set(["og", "wd01", "wd02", "nwd00", "nwd01", "sd100", "sd200", "sd400", "sd800",
                             "sd1600", "sd3200", "sd6400", "sd12800", "dev", "test"])
 
   def get_labels(self):
