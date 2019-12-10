@@ -56,7 +56,7 @@ def create_dictionary(messages):
             freq_map[word] += 1
 
     # get list of frequent words
-    min_occurrence = 5
+    min_occurrence = 100
     frequent_words = [word for word, frequency in freq_map.items()
                          if frequency >= min_occurrence]
     return {word: i for i, word in enumerate(frequent_words)}
@@ -194,7 +194,11 @@ def return_keywords_indices(data):
 
     all_matrix = transform_text(all_messages, dictionary)
 
+    print("Text matrix has been prepared.")
+
     naive_bayes_model = fit_naive_bayes_model(all_matrix, all_labels)
+
+    print("Naive bayes model fit complete")
 
     most_pos_indices, most_neg_indices = sort_indicative_keywords(naive_bayes_model, dictionary)
 
