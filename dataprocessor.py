@@ -40,18 +40,20 @@ class ImdbProcessor():
     return posExamples, negExamples
 
   def _create_examples(self, dataDirPath):
-    examples = []
+    num_examples = len(tf.gfile.ListDirectory(dataDirPath))
+    examples = [None] * num_examples
     for filename in tf.gfile.ListDirectory(dataDirPath):
       if not filename.endswith("txt"):
         continue
       keys = filename.split(".")[0].split("_")
       assert len(keys) == 3
       # keys is [id, label, review_score]. For now we are only interested in the label
+      idx = int(keys[0])
       label = keys[1]
       with tf.gfile.Open(os.path.join(dataDirPath, filename)) as f:
         text = f.read().strip().replace("<br />", " ")
-      examples.append(InputExample(
-          guid="unused_id", text_a=text, text_b=None, label=label))
+      examples[idx] = InputExample(
+          guid="unused_id", text_a=text, text_b=None, label=label)
     return examples
 
   def _create_examples_from_csv(self, input_file):
