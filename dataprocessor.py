@@ -24,10 +24,10 @@ class ImdbProcessor():
     return self._create_examples(os.path.join(self.dataDirPath, dataset))
 
   def get_dev_examples(self):
-    return self._create_examples(os.path.join(self.dataDirPath, "dev"))
+    return self._create_test_examples(os.path.join(self.dataDirPath, "dev"))
 
   def get_test_examples(self, splitLabel=False):
-    testExamples = self._create_examples(os.path.join(self.dataDirPath, "test"))
+    testExamples = self._create_test_examples(os.path.join(self.dataDirPath, "test"))
     if not splitLabel:
       return testExamples
     posExamples = []
@@ -39,7 +39,7 @@ class ImdbProcessor():
         negExamples.append(example)
     return posExamples, negExamples
 
-  def _create_examples(self, dataDirPath):
+  def _create_test_examples(self, dataDirPath):
     num_examples = len(tf.gfile.ListDirectory(dataDirPath))
     examples = [None] * num_examples
     for filename in tf.gfile.ListDirectory(dataDirPath):
@@ -54,6 +54,21 @@ class ImdbProcessor():
         text = f.read().strip().replace("<br />", " ")
       examples[idx] = InputExample(
           guid="unused_id", text_a=text, text_b=None, label=label)
+    return examples
+
+  def _create_examples(self, dataDirPath):
+    examples = []
+    for filename in tqdm(tf.gfile.ListDirectory(dataDirPath)):
+      if not filename.endswith("txt"):
+        continue
+      keys = filename.split(".")[0].split("_")
+      assert len(keys) == 3
+      # keys is [id, label, review_score]. For now we are only interested in the label
+      label = keys[1]
+      with tf.gfile.Open(os.path.join(dataDirPath, filename)) as f:
+        text = f.read().strip().replace("<br />", " ")
+      examples.append(InputExample(
+          guid="unused_id", text_a=text, text_b=None, label=label))
     return examples
 
   def _create_examples_from_csv(self, input_file):
