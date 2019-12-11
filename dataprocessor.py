@@ -86,7 +86,7 @@ class ImdbProcessor():
 
 
 
-class RegressuibProcessor():
+class RegressionProcessor():
 
   def __init__(self, dataDirPath):
     '''
