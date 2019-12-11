@@ -90,7 +90,7 @@ flags.DEFINE_enum('mode', 'train', ['train', 'eval', 'predict'],
 flags.DEFINE_enum('pred_ds', 'test', ['train', 'dev', 'test'],
                           'Which dataset to make predictions on.')
 
-flags.DEFINE_enum('early_stopping_criterion', 'acc', ['acc', 'loss'],
+flags.DEFINE_enum('early_stopping_criterion', 'correlation', ['correlation', 'loss'],
                   "Whether to use accuracy or loss as early stopping criterion.")
 
 flags.DEFINE_integer("train_batch_size", 32, "Total batch size for training.")
@@ -816,7 +816,7 @@ def main(_):
     # tf.logging.info("  Num steps = %d", num_train_steps)
 
     best_val_loss = np.inf
-    best_val_acc = 0.
+    best_val_corr = -1.0
     best_epoch = None
     best_result = None
     patience = FLAGS.patience
@@ -847,14 +847,14 @@ def main(_):
         for key in sorted(result.keys()):
           tf.logging.info("  %s = %s", key, str(result[key]))
           writer.write("%s = %s\n" % (key, str(result[key])))
-      if FLAGS.early_stopping_criterion == "acc":
-        if result['eval_accuracy'] > best_val_acc:
-          best_val_acc = result['eval_accuracy']
+      if FLAGS.early_stopping_criterion == "correlation":
+        if result['eval_correlation'] > best_val_corr:
+          best_val_corr = result['eval_correlation']
           best_epoch = curr_epoch
           best_result = result
           patience = FLAGS.patience
         else:
-          tf.logging.info("Validation accuracy did not increase.")
+          tf.logging.info("Validation correlation did not increase.")
           if patience == 0:
             tf.logging.info("Early stopping.")
             break
@@ -988,9 +988,7 @@ def main(_):
         probabilities = prediction["probabilities"]
         if i >= num_actual_predict_examples:
           break
-        output_line = "\t".join(
-            str(class_probability)
-            for class_probability in probabilities) + "\n"
+        output_line = probabilities + "\n"
         writer.write(output_line)
         num_written_lines += 1
     assert num_written_lines == num_actual_predict_examples
