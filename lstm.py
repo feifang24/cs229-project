@@ -26,7 +26,7 @@ devExamples = dataProcessor.get_dev_examples()
 testExamples = dataProcessor.get_test_examples()
 posTestExamples, negTestExamples = dataProcessor.get_test_examples(True)
 
-for trainingSet in ['og', 'sd800', 'sd1600', 'sd3200', 'sd6400', 'sd12800', 'nwd00', 'nwd01']:
+for trainingSet in ['nwd01']:
   trainExamples = dataProcessor.get_train_examples(trainingSet)
   allExamples = trainExamples + devExamples
   dictionary, reverseDictionary = lstm_preprocess.construct_dictionary(allExamples, tokenizer, K, remove_top_words)
@@ -56,7 +56,7 @@ for trainingSet in ['og', 'sd800', 'sd1600', 'sd3200', 'sd6400', 'sd12800', 'nwd
   model.add(Dense(1, activation='sigmoid'))
   model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
   print(model.summary())
-  model.fit(xTrain, yTrain, epochs=6, batch_size=64, validation_data=(xDev, yDev))
+  model.fit(xTrain, yTrain, epochs=3, batch_size=64, validation_data=(xDev, yDev))
   # Final evaluation of the model
   testScores = model.evaluate(xTest, yTest, verbose=0)
   posTestScores = model.evaluate(xPosTest, yPosTest, verbose=0)
@@ -64,5 +64,5 @@ for trainingSet in ['og', 'sd800', 'sd1600', 'sd3200', 'sd6400', 'sd12800', 'nwd
   out = "Test Accuracy: %.2f%%\n" % (testScores[1]*100)
   out += "Pos Accuracy: %.2f%%\n" % (posTestScores[1]*100)
   out += "Neg Accuracy: %.2f%%\n" % (negTestScores[1]*100)
-  with open(trainingSet + "_stat.txt", "w+") as f:
+  with open(trainingSet + "_stat_11.txt", "w+") as f:
     f.write(out)
