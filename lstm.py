@@ -56,7 +56,7 @@ for trainingSet in ['nwd00']: #['og', 'sd800', 'sd1600', 'sd3200', 'sd6400', 'sd
   model.add(Dense(1, activation='sigmoid'))
   model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
   print(model.summary())
-  model.fit(xTrain, yTrain, epochs=6, batch_size=64, validation_data=(xDev, yDev))
+  model.fit(xTrain, yTrain, epochs=3, batch_size=64, validation_data=(xDev, yDev))
   # Final evaluation of the model
   '''
   testScores = model.evaluate(xTest, yTest, verbose=0)
@@ -65,13 +65,11 @@ for trainingSet in ['nwd00']: #['og', 'sd800', 'sd1600', 'sd3200', 'sd6400', 'sd
   out = "Test Accuracy: %.2f%%\n" % (testScores[1]*100)
   out += "Pos Accuracy: %.2f%%\n" % (posTestScores[1]*100)
   out += "Neg Accuracy: %.2f%%\n" % (negTestScores[1]*100)
+
   with open(trainingSet + "_stat.txt", "w+") as f:
     f.write(out)
   '''
   test_probs = model.predict(xTest)
   save_path = "lstm_output/{}.txt".format(trainingSet)
   numpy.savetxt(save_path, test_probs)
-
-
-
 

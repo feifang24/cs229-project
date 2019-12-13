@@ -80,7 +80,7 @@ def write_naive_samples_to_data_file(inputPath, outputPath):
     the sample_stats of this naive dataset.
   '''
   lgf = NaiveLabelGeneratingFunction()
-  directoryNameWithVersion = "nwd01"
+  directoryNameWithVersion = "nwd00"
   outputDir = outputPath + directoryNameWithVersion
 
   naive_samples, sample_stats = generate_naive_label(inputPath, lgf)
