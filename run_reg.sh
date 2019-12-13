@@ -4,7 +4,7 @@ export DATA_DIR=/home/src/imdb-data   #gs://cs229-data/imdb-data
 export OUTPUT_DIR=gs://cs229-checkpoints/$TASK_NAME
 
 
-for SUBSET_DIR in wd04 #wd01 og sd800 sd1600 sd3200 sd6400 sd12800
+for SUBSET_DIR in og sd1600 sd3200 sd6400 sd12800 #sd800 wd05  #wd04 #wd01 
 do
     python3 bert/run_regression.py \
         --task_name=$TASK_NAME \
@@ -14,10 +14,10 @@ do
         --vocab_file=$BERT_BASE_DIR/vocab.txt \
         --bert_config_file=$BERT_BASE_DIR/bert_config.json \
         --init_checkpoint=$BERT_BASE_DIR/bert_model.ckpt \
-        --max_seq_length=128 \
+        --max_seq_length=256 \
         --train_batch_size=16 \
         --learning_rate=2e-5 \
         --num_train_epochs=10 \
-        --patience=3 \
+        --patience=2 \
         --output_dir=$OUTPUT_DIR
 done

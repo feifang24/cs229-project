@@ -488,6 +488,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
 
     logits = tf.matmul(output_layer, output_weights, transpose_b=True)
     logits = tf.nn.bias_add(logits, output_bias)
+    logits = tf.squeeze(logits, axis=-1)
     '''
     probabilities = tf.nn.softmax(logits, axis=-1)
     log_probs = tf.nn.log_softmax(logits, axis=-1)
@@ -632,7 +633,7 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
                 shape=[num_examples, seq_length],
                 dtype=tf.int32),
         "label_ids":
-            tf.constant(all_label_ids, shape=[num_examples], dtype=tf.int32),
+            tf.constant(all_label_ids, shape=[num_examples], dtype=tf.float32),
     })
 
     if is_training:
@@ -885,7 +886,7 @@ def main(_):
         writer.write("%s = %s\n" % (key, str(best_result[key])))
 
     # training complete. start autoeval on test set using best checkpoint.
-  if FLAGS.mode == "eval" or FLAGS.mode == "train":
+  if FLAGS.mode == "eval": # or FLAGS.mode == "train":
     # get checkpoint
     best_output_eval_file = os.path.join(FLAGS.output_dir, "best_eval_results.txt")
     with tf.gfile.GFile(best_output_eval_file, "r") as reader:
@@ -986,7 +987,7 @@ def main(_):
         probabilities = prediction["probabilities"]
         if i >= num_actual_predict_examples:
           break
-        output_line = probabilities + "\n"
+        output_line = str(probabilities) + "\n"
         writer.write(output_line)
         num_written_lines += 1
     assert num_written_lines == num_actual_predict_examples
