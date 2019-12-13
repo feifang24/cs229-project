@@ -373,7 +373,7 @@ def file_based_convert_examples_to_features(
       return f
 
     def create_float_feature(values):
-      f = tf.train.Feature(float_list=tf.train.FloatList(value=list(values)))
+      f = tf.train.Feature(float_list=tf.train.FloatList(value=values))
       return f
 
     features = collections.OrderedDict()
@@ -493,7 +493,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
     probabilities = tf.nn.softmax(logits, axis=-1)
     log_probs = tf.nn.log_softmax(logits, axis=-1)
     '''
-    probabilities = tf.nn.sigmoid(logits)
+    probabilities = logits #tf.nn.sigmoid(logits)
     per_example_loss = tf.square(probabilities - labels)
     loss = tf.reduce_mean(per_example_loss)
 
@@ -694,7 +694,7 @@ def main(_):
 
 
   # verify model id
-  if FLAGS.mode == "train":
+  if FLAGS.mode == "train" and FLAGS.model_id == None:
     FLAGS.model_id = model_hash()      # generate model hash
     new_dir = os.path.join(FLAGS.output_dir, FLAGS.subset_dir, FLAGS.model_id)
     tf.gfile.MakeDirs(new_dir) # make directory based on hash
