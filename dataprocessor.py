@@ -3,6 +3,7 @@ import os
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 import csv
+from tqdm import tqdm
 
 class ImdbProcessor():
 
@@ -123,9 +124,9 @@ class RegressionProcessor():
 
   def _create_test_examples(self, dataDirPath):
     # hard labels in {'neg', 'pos'} - convert to 0/1
-    num_examples = len(tf.gfile.ListDirectory(dataDirPath))
+    num_examples = len(os.listdir(dataDirPath))
     examples = [None] * num_examples
-    for filename in tf.gfile.ListDirectory(dataDirPath):
+    for filename in os.listdir(dataDirPath):
       if not filename.endswith("txt"):
         continue
       keys = filename.split(".")[0].split("_")
@@ -133,7 +134,7 @@ class RegressionProcessor():
       # keys is [id, label, review_score]. For now we are only interested in the label
       idx = int(keys[0])
       label = 1.0 if keys[1] == 'pos' else 0.0
-      with tf.gfile.Open(os.path.join(dataDirPath, filename)) as f:
+      with open(os.path.join(dataDirPath, filename)) as f:
         text = f.read().strip().replace("<br />", " ")
       examples[idx] = InputExample(
           guid="unused_id", text_a=text, text_b=None, label=label)
@@ -142,14 +143,14 @@ class RegressionProcessor():
   def _create_examples(self, dataDirPath):
     # hard labels in {'neg', 'pos'} - convert to 0/1
     examples = []
-    for filename in tqdm(tf.gfile.ListDirectory(dataDirPath)):
+    for filename in tqdm(os.listdir(dataDirPath)):
       if not filename.endswith("txt"):
         continue
       keys = filename.split(".")[0].split("_")
       assert len(keys) == 3
       # keys is [id, label, review_score]. For now we are only interested in the label
       label = 1.0 if keys[1] == 'pos' else 0.0
-      with tf.gfile.Open(os.path.join(dataDirPath, filename)) as f:
+      with open(os.path.join(dataDirPath, filename)) as f:
         text = f.read().strip().replace("<br />", " ")
       examples.append(InputExample(
           guid="unused_id", text_a=text, text_b=None, label=label))
@@ -158,7 +159,7 @@ class RegressionProcessor():
   def _create_examples_from_csv(self, input_file):
     # numeric, soft labels
     examples = []
-    with tf.gfile.Open(input_file, "r") as f:
+    with open(input_file, "r") as f:
       reader = csv.reader(f)
       for line in reader:
         text, str_label = line
