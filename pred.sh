@@ -1,5 +1,5 @@
-export SUBSET_DIR=og
-export MODEL_ID=12092031
+export SUBSET_DIR=wd03
+export MODEL_ID=12130518
 # if we want to evaluate multiple we should give a list of tuples and iterate through the list
 
 export BERT_BASE_DIR=gs://cs229-checkpoints/uncased_L-12_H-768_A-12
@@ -17,8 +17,8 @@ python3 bert/run_classifier.py \
     --vocab_file=$BERT_BASE_DIR/vocab.txt \
     --bert_config_file=$BERT_BASE_DIR/bert_config.json \
     --init_checkpoint=$BERT_BASE_DIR/bert_model.ckpt \
-    --max_seq_length=128 \
-    --train_batch_size=32 \
+    --max_seq_length=256 \
+    --train_batch_size=16 \
     --learning_rate=2e-5 \
     --num_train_epochs=10 \
     --patience=2 \
