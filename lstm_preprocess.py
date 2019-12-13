@@ -13,6 +13,9 @@ def labels_to_vector(labels):
   '''
   return np.array([1 * (label == "pos") for label in labels])
 
+def reg_labels_to_vector(labels):
+  return np.asarray(labels)
+
 
 def example_to_indices(example, tokenizer, dictionary):
   '''
