@@ -1,5 +1,5 @@
-export SUBSET_DIR=og
-export MODEL_ID=12111747
+export SUBSET_DIR=wd05
+export MODEL_ID=12131001
 # if we want to evaluate multiple we should give a list of tuples and iterate through the list
 
 export BERT_BASE_DIR=gs://cs229-checkpoints/uncased_L-12_H-768_A-12
