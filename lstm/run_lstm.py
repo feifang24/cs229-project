@@ -6,8 +6,15 @@ from keras.layers import LSTM
 from keras.layers.embeddings import Embedding
 from keras.preprocessing import sequence
 import lstm_preprocess
-from dataprocessor import ImdbProcessor, RegressionProcessor
 from tokenizer import FullTokenizer
+
+
+import os,sys,inspect
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+from dataprocessor import ImdbProcessor, RegressionProcessor
+
 
 # fix random seed for reproducibility
 numpy.random.seed(7)
@@ -18,7 +25,7 @@ max_review_length = 500
 K = top_words - 1
 embedding_vecor_length = 128
 
-dataDir = 'imdb-data'
+dataDir = '../imdb-data'
 dataProcessor = RegressionProcessor(dataDir)
 tokenizer = FullTokenizer("vocab.txt")
 
@@ -26,7 +33,7 @@ devExamples = dataProcessor.get_dev_examples()
 testExamples = dataProcessor.get_test_examples()
 #posTestExamples, negTestExamples = dataProcessor.get_test_examples(True)
 
-for trainingSet in ['nwd00']: #['og', 'sd800', 'sd1600', 'sd3200', 'sd6400', 'sd12800', 'nwd00', 'nwd01']:
+for trainingSet in ['sd800']: #['og', 'sd800', 'sd1600', 'sd3200', 'sd6400', 'sd12800', 'nwd00', 'nwd01']:
   trainExamples = dataProcessor.get_train_examples(trainingSet)
   #allExamples = trainExamples + devExamples
   dictionary, reverseDictionary = lstm_preprocess.construct_dictionary(trainExamples, tokenizer, K, remove_top_words)

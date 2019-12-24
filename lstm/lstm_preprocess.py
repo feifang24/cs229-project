@@ -1,7 +1,12 @@
-from dataprocessor import ImdbProcessor
 import collections
 import numpy as np
 from tokenizer import BasicTokenizer,FullTokenizer
+
+import os,sys,inspect
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+from dataprocessor import ImdbProcessor
 
 
 def labels_to_vector(labels):
