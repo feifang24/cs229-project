@@ -1,3 +1,0 @@
-Test Accuracy: 67.93%
-Pos Accuracy: 81.04%
-Neg Accuracy: 54.81%
