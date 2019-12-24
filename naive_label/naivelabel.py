@@ -1,6 +1,11 @@
 import tensorflow as tf
 import os
 from lgf import NaiveLabelGeneratingFunction
+
+import sys,inspect
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
 import common
 
 def generate_naive_label(inputPath, lgf):
